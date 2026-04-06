@@ -1,0 +1,131 @@
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(201, 162, 39, 0.16), transparent 60%),
+    var(--bg);
+}
+
+.auth-card {
+  width: min(100%, 460px);
+  padding: 1.4rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(20, 22, 28, 0.82);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+}
+
+.auth-brand {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: var(--accent);
+}
+
+.auth-title {
+  margin: 0.45rem 0 0;
+  font-size: 1.35rem;
+}
+
+.auth-sub {
+  margin: 0.4rem 0 1.2rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.auth-error {
+  margin: 0 0 0.85rem;
+  border: 1px solid rgba(232, 93, 93, 0.35);
+  background: rgba(232, 93, 93, 0.1);
+  color: #f0b4b4;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.auth-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(12, 13, 16, 0.8);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: rgba(201, 162, 39, 0.45);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+}
+
+.auth-submit,
+.auth-google {
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-submit {
+  margin-top: 0.3rem;
+  color: #0a0b0e;
+  background: linear-gradient(135deg, #d4af37, var(--accent-dim));
+}
+
+.auth-google {
+  margin-top: 0.3rem;
+  background: #fff;
+  color: #111;
+}
+
+.auth-submit:disabled,
+.auth-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-divider {
+  margin: 0.8rem 0 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+}
+
+.auth-foot {
+  margin: 0.95rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.auth-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+

@@ -82,6 +82,22 @@
   height: 1px;
 }
 
+.chat-topbar__logout {
+  justify-self: end;
+  border: 1px solid var(--border);
+  background: rgba(20, 22, 28, 0.7);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-topbar__logout:hover {
+  border-color: rgba(201, 162, 39, 0.4);
+}
+
 .chat-layout {
   flex: 1;
   display: flex;
@@ -333,6 +349,31 @@
   flex-direction: column;
   gap: 0.45rem;
   padding-bottom: 0.25rem;
+}
+
+.composer__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.composer__model-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.composer__model-select {
+  border: 1px solid var(--border);
+  background: rgba(20, 22, 28, 0.8);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.8rem;
+}
+
+.composer__model-select:focus {
+  outline: none;
+  border-color: rgba(201, 162, 39, 0.45);
 }
 
 .composer__field {

@@ -1,5 +1,11 @@
 import { apiUrl } from "./config";
 
+let accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
+  accessToken = token;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -12,12 +18,18 @@ export class ApiError extends Error {
 }
 
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
   const res = await fetch(apiUrl(path), {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
+    credentials: "include",
+    headers,
   });
 
   const text = await res.text();

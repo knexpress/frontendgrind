@@ -3,15 +3,19 @@ import {
   createConversation,
   fetchConversation,
   sendMessage,
+  type ModelAlias,
   type ConversationMessage,
 } from "../../api/conversations";
 import { ApiError } from "../../api/http";
 
-const SESSION_KEY = "grind_conversation_id";
-
 type Status = "idle" | "loading" | "sending" | "error";
 
-export function useChatSession() {
+function sessionKeyForUser(userId: string): string {
+  return `grind_conversation_id_${userId}`;
+}
+
+export function useChatSession(userId: string) {
+  const SESSION_KEY = sessionKeyForUser(userId);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [status, setStatus] = useState<Status>("idle");
@@ -85,7 +89,7 @@ export function useChatSession() {
   }, []);
 
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, model?: ModelAlias) => {
       if (!conversationId) return;
       const trimmed = text.trim();
       if (!trimmed) return;
@@ -96,7 +100,7 @@ export function useChatSession() {
       setStatus("sending");
 
       try {
-        const reply = await sendMessage(conversationId, trimmed);
+        const reply = await sendMessage(conversationId, trimmed, model);
         setMessages((m) => [...m, { role: "assistant", content: reply.content }]);
         setStatus("idle");
       } catch (e) {

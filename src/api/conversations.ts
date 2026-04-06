@@ -1,6 +1,7 @@
 import { apiJson } from "./http";
 
 export type ChatRole = "user" | "assistant" | "system";
+export type ModelAlias = "Chat" | "Thinking" | "Thinking2.0" | "Flash-Lite" | "Flash-Omni" | "Flash-Chat";
 
 export type ConversationMessage = {
   role: ChatRole;
@@ -16,6 +17,11 @@ export type ConversationDto = {
   updatedAt: string;
 };
 
+export type ModelOption = {
+  alias: ModelAlias;
+  description: string;
+};
+
 export async function createConversation(): Promise<{ id: string; createdAt: string }> {
   return apiJson("/conversations", { method: "POST" });
 }
@@ -24,12 +30,17 @@ export async function fetchConversation(id: string): Promise<ConversationDto> {
   return apiJson(`/conversations/${id}`, { method: "GET" });
 }
 
+export async function fetchModelOptions(): Promise<{ items: ModelOption[] }> {
+  return apiJson("/ai/models", { method: "GET" });
+}
+
 export async function sendMessage(
   conversationId: string,
-  content: string
+  content: string,
+  model?: ModelAlias
 ): Promise<{ role: "assistant"; content: string; model: string }> {
   return apiJson(`/conversations/${conversationId}/messages`, {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, model }),
   });
 }
