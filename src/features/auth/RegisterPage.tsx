@@ -19,7 +19,7 @@ export function RegisterPage() {
     setError(null);
     try {
       await auth.register(fullName, email, password);
-      navigate("/", { replace: true });
+      navigate("/onboarding", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Registration failed");
     } finally {

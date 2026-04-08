@@ -1,0 +1,139 @@
+.onboarding-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -20%, rgba(201, 162, 39, 0.15), transparent 60%),
+    var(--bg);
+}
+
+.onboarding-card {
+  width: min(100%, 680px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(20, 22, 28, 0.82);
+  padding: 1.2rem;
+}
+
+.onboarding-head {
+  margin-bottom: 1rem;
+}
+
+.onboarding-eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.onboarding-title {
+  margin: 0.45rem 0 0.7rem;
+  font-size: 1.35rem;
+}
+
+.onboarding-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.onboarding-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(135deg, #d4af37, var(--accent-dim));
+}
+
+.onboarding-question {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.onboarding-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(12, 13, 16, 0.75);
+  color: var(--text);
+  padding: 0.78rem 0.9rem;
+}
+
+.onboarding-input--textarea {
+  resize: vertical;
+}
+
+.onboarding-input:focus {
+  outline: none;
+  border-color: rgba(201, 162, 39, 0.45);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+}
+
+.onboarding-actions {
+  margin-top: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.onboarding-btn {
+  border-radius: 10px;
+  border: none;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding-btn--ghost {
+  border: 1px solid var(--border);
+  background: rgba(20, 22, 28, 0.6);
+  color: var(--text);
+}
+
+.onboarding-btn--primary {
+  color: #0a0b0e;
+  background: linear-gradient(135deg, #d4af37, var(--accent-dim));
+}
+
+.onboarding-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.onboarding-error {
+  margin: 0.7rem 0 0;
+  color: #f0b4b4;
+}
+
+@media (max-width: 640px) {
+  .onboarding-page {
+    padding: 0.75rem;
+  }
+
+  .onboarding-card {
+    border-radius: 14px;
+    padding: 0.95rem;
+  }
+
+  .onboarding-title {
+    font-size: 1.1rem;
+  }
+
+  .onboarding-question {
+    font-size: 0.95rem;
+  }
+
+  .onboarding-input {
+    padding: 0.68rem 0.78rem;
+  }
+
+  .onboarding-actions {
+    flex-direction: column-reverse;
+  }
+
+  .onboarding-btn {
+    width: 100%;
+  }
+}
+

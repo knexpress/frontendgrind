@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createConversation,
   fetchConversation,
+  listConversations,
   sendMessage,
+  type ConversationListItem,
   type ModelAlias,
   type ConversationMessage,
 } from "../../api/conversations";
@@ -17,68 +19,63 @@ function sessionKeyForUser(userId: string): string {
 export function useChatSession(userId: string) {
   const SESSION_KEY = sessionKeyForUser(userId);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [threads, setThreads] = useState<ConversationListItem[]>([]);
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const bootstrap = useCallback(async () => {
+  const bootstrap = useCallback(async (targetId?: string) => {
     setStatus("loading");
     setError(null);
     try {
-      sessionStorage.removeItem(SESSION_KEY);
-      const { id } = await createConversation();
-      sessionStorage.setItem(SESSION_KEY, id);
-      setConversationId(id);
-      const conv = await fetchConversation(id);
+      const list = await listConversations();
+      setThreads(list.items);
+
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      const latest = list.items[0];
+      let idToOpen = targetId || null;
+
+      if (!idToOpen && stored && list.items.some((x) => x.id === stored)) {
+        idToOpen = stored;
+      }
+      if (!idToOpen && latest) {
+        const ageMs = Date.now() - new Date(latest.updatedAt).getTime();
+        const shouldAutoNew = ageMs > 24 * 60 * 60 * 1000;
+        if (!shouldAutoNew) {
+          idToOpen = latest.id;
+        }
+      }
+      if (!idToOpen) {
+        const created = await createConversation();
+        idToOpen = created.id;
+      }
+
+      sessionStorage.setItem(SESSION_KEY, idToOpen);
+      setConversationId(idToOpen);
+      const conv = await fetchConversation(idToOpen);
       setMessages(conv.messages);
+      if (!list.items.some((x) => x.id === idToOpen)) {
+        const updated = await listConversations();
+        setThreads(updated.items);
+      }
       setStatus("idle");
     } catch (e) {
       setStatus("error");
       setError(e instanceof ApiError ? e.message : "Could not start session");
     }
-  }, []);
+  }, [SESSION_KEY]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function init() {
-      setStatus("loading");
-      setError(null);
-      const stored = sessionStorage.getItem(SESSION_KEY);
       try {
-        if (stored) {
-          const conv = await fetchConversation(stored);
-          if (cancelled) return;
-          setConversationId(conv.id);
-          setMessages(conv.messages);
-          setStatus("idle");
-          return;
-        }
-        const { id } = await createConversation();
-        if (cancelled) return;
-        sessionStorage.setItem(SESSION_KEY, id);
-        setConversationId(id);
-        const conv = await fetchConversation(id);
-        if (cancelled) return;
-        setMessages(conv.messages);
-        setStatus("idle");
+        await bootstrap();
       } catch {
         if (cancelled) return;
         sessionStorage.removeItem(SESSION_KEY);
-        try {
-          const { id } = await createConversation();
-          if (cancelled) return;
-          sessionStorage.setItem(SESSION_KEY, id);
-          setConversationId(id);
-          const conv = await fetchConversation(id);
-          if (cancelled) return;
-          setMessages(conv.messages);
-          setStatus("idle");
-        } catch (e) {
-          if (cancelled) return;
-          setStatus("error");
-          setError(e instanceof ApiError ? e.message : "Could not start session");
-        }
+        setStatus("error");
+        setError("Could not start session");
       }
     }
 
@@ -86,7 +83,7 @@ export function useChatSession(userId: string) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [SESSION_KEY, bootstrap]);
 
   const send = useCallback(
     async (text: string, model?: ModelAlias) => {
@@ -102,6 +99,8 @@ export function useChatSession(userId: string) {
       try {
         const reply = await sendMessage(conversationId, trimmed, model);
         setMessages((m) => [...m, { role: "assistant", content: reply.content }]);
+        const latestList = await listConversations();
+        setThreads(latestList.items);
         setStatus("idle");
       } catch (e) {
         setMessages((m) => m.slice(0, -1));
@@ -114,10 +113,16 @@ export function useChatSession(userId: string) {
 
   return {
     conversationId,
+    threads,
     messages,
     status,
     error,
     send,
+    openConversation: bootstrap,
+    createNewConversation: async () => {
+      const created = await createConversation();
+      await bootstrap(created.id);
+    },
     retry: bootstrap,
   };
 }

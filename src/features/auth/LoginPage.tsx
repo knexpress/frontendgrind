@@ -18,7 +18,7 @@ export function LoginPage() {
     setError(null);
     try {
       await auth.login(email, password);
-      navigate("/", { replace: true });
+      navigate("/onboarding", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed");
     } finally {

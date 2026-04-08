@@ -1,5 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { completeGoogleLogin, login, loginWithGoogle, logout, refreshSession, register, type AuthUser } from "../api/auth";
+import {
+  completeGoogleLogin,
+  login,
+  loginWithGoogle,
+  logout,
+  refreshSession,
+  register,
+  type AuthUser,
+} from "../api/auth";
 import { apiUrl } from "../api/config";
 import { setAccessToken } from "../api/http";
 
@@ -8,11 +16,13 @@ type AuthStatus = "loading" | "authenticated" | "guest";
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
+  onboardingCompleted: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (fullName: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   startGoogleLogin: () => void;
   completeGoogleCallback: (accessToken: string) => Promise<void>;
+  markOnboardingCompleted: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -20,19 +30,22 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     async function init() {
       try {
-        const u = await refreshSession();
+        const session = await refreshSession();
         if (!mounted) return;
-        setUser(u);
+        setUser(session.user);
+        setOnboardingCompleted(session.onboardingCompleted);
         setStatus("authenticated");
       } catch {
         if (!mounted) return;
         setAccessToken(null);
         setUser(null);
+        setOnboardingCompleted(false);
         setStatus("guest");
       }
     }
@@ -46,19 +59,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       status,
       user,
+      onboardingCompleted,
       async login(email: string, password: string) {
-        const u = await login({ email, password });
-        setUser(u);
+        const session = await login({ email, password });
+        setUser(session.user);
+        setOnboardingCompleted(session.onboardingCompleted);
         setStatus("authenticated");
       },
       async register(fullName: string, email: string, password: string) {
-        const u = await register({ fullName, email, password });
-        setUser(u);
+        const session = await register({ fullName, email, password });
+        setUser(session.user);
+        setOnboardingCompleted(session.onboardingCompleted);
         setStatus("authenticated");
       },
       async logout() {
         await logout();
         setUser(null);
+        setOnboardingCompleted(false);
         setStatus("guest");
       },
       startGoogleLogin() {
@@ -66,12 +83,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async completeGoogleCallback(accessToken: string) {
         completeGoogleLogin(accessToken);
-        const u = await refreshSession();
-        setUser(u);
+        const session = await refreshSession();
+        setUser(session.user);
+        setOnboardingCompleted(session.onboardingCompleted);
         setStatus("authenticated");
       },
+      markOnboardingCompleted() {
+        setOnboardingCompleted(true);
+      },
     }),
-    [status, user]
+    [onboardingCompleted, status, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

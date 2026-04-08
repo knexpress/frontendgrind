@@ -1,42 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { fetchModelOptions, type ModelAlias, type ModelOption } from "../../api/conversations";
 import { MessageList } from "./MessageList";
 import { Composer } from "./Composer";
-import { IntakeQuestionnaire } from "./IntakeQuestionnaire";
 import { useChatSession } from "./useChatSession";
 import "./chat.css";
 
-function intakeClosedInStorage(conversationId: string): boolean {
-  return (
-    sessionStorage.getItem(`grind_intake_skipped_${conversationId}`) === "1" ||
-    sessionStorage.getItem(`grind_intake_done_${conversationId}`) === "1"
-  );
-}
-
 export function ChatView() {
   const auth = useAuth();
-  const { conversationId, messages, status, error, send, retry } = useChatSession(auth.user!.id);
+  const { conversationId, threads, messages, status, error, send, retry, openConversation, createNewConversation } =
+    useChatSession(auth.user!.id);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [intakeDismissed, setIntakeDismissed] = useState(false);
   const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelAlias>("Chat");
 
   const busy = status === "loading" || status === "sending";
   const showTyping = status === "sending";
   const sessionLoading = status === "loading";
-
-  useEffect(() => {
-    setIntakeDismissed(false);
-  }, [conversationId]);
-
-  const showIntake = useMemo(() => {
-    if (!conversationId || status !== "idle" || sessionLoading || error) return false;
-    if (messages.length > 0) return false;
-    if (intakeDismissed) return false;
-    return !intakeClosedInStorage(conversationId);
-  }, [conversationId, status, sessionLoading, error, messages.length, intakeDismissed]);
+  const visibleThreads = threads.filter((t) => Boolean(t.title.trim() || t.lastMessagePreview.trim()));
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -77,7 +59,7 @@ export function ChatView() {
         ];
 
   return (
-    <div className={`chat-shell${showIntake ? " chat-shell--intake" : ""}`}>
+    <div className="chat-shell">
       <header className="chat-topbar">
         <Link to="/" className="chat-topbar__back">
           <span className="chat-topbar__back-icon" aria-hidden="true" />
@@ -97,24 +79,47 @@ export function ChatView() {
         </button>
       </header>
 
-      <div className="chat-layout">
-        <div ref={scrollRef} className="chat-messages-wrap">
-          {error && status !== "loading" && (
-            <div className="banner banner--error banner--enter">
-              <span>{error}</span>
-              <button type="button" className="link-button" onClick={() => void retry()}>
-                Retry
-              </button>
-            </div>
-          )}
-          <MessageList
-            messages={messages}
-            showTyping={showTyping}
-            sessionLoading={sessionLoading}
-          />
-        </div>
+      <div className="chat-body">
+        <aside className="chat-sidebar">
+          <div className="chat-sidebar__header">
+            <h2>Chats</h2>
+            <button type="button" className="chat-sidebar__new" onClick={() => void createNewConversation()}>
+              New chat
+            </button>
+          </div>
+          <ul className="chat-thread-list">
+            {visibleThreads.map((t) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  className={`chat-thread-item${conversationId === t.id ? " is-active" : ""}`}
+                  onClick={() => void openConversation(t.id)}
+                >
+                  <strong>{t.title || "Untitled chat"}</strong>
+                  <span>{t.lastMessagePreview || "No messages yet"}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
 
-        {!showIntake && (
+        <div className="chat-layout">
+          <div ref={scrollRef} className="chat-messages-wrap">
+            {error && status !== "loading" && (
+              <div className="banner banner--error banner--enter">
+                <span>{error}</span>
+                <button type="button" className="link-button" onClick={() => void retry()}>
+                  Retry
+                </button>
+              </div>
+            )}
+            <MessageList
+              messages={messages}
+              showTyping={showTyping}
+              sessionLoading={sessionLoading}
+            />
+          </div>
+
           <div className="chat-composer-wrap">
             <Composer
               disabled={busy}
@@ -124,17 +129,8 @@ export function ChatView() {
               onSend={(t, model) => void send(t, model)}
             />
           </div>
-        )}
+        </div>
       </div>
-
-      {showIntake && conversationId ? (
-        <IntakeQuestionnaire
-          key={conversationId}
-          conversationId={conversationId}
-          onSubmit={(text) => send(text, selectedModel)}
-          onDismiss={() => setIntakeDismissed(true)}
-        />
-      ) : null}
     </div>
   );
 }

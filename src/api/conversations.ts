@@ -17,6 +17,14 @@ export type ConversationDto = {
   updatedAt: string;
 };
 
+export type ConversationListItem = {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessagePreview: string;
+};
+
 export type ModelOption = {
   alias: ModelAlias;
   description: string;
@@ -28,6 +36,10 @@ export async function createConversation(): Promise<{ id: string; createdAt: str
 
 export async function fetchConversation(id: string): Promise<ConversationDto> {
   return apiJson(`/conversations/${id}`, { method: "GET" });
+}
+
+export async function listConversations(): Promise<{ items: ConversationListItem[] }> {
+  return apiJson("/conversations", { method: "GET" });
 }
 
 export async function fetchModelOptions(): Promise<{ items: ModelOption[] }> {

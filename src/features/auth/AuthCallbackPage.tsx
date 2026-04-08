@@ -21,7 +21,7 @@ export function AuthCallbackPage() {
       try {
         await auth.completeGoogleCallback(token);
         if (!mounted) return;
-        navigate("/", { replace: true });
+        navigate("/onboarding", { replace: true });
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof ApiError ? e.message : "Google sign-in failed");
