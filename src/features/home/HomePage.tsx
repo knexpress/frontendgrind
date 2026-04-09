@@ -115,40 +115,40 @@ export function HomePage() {
             <li className="home-step home-reveal">
               <span className="home-step__num">1</span>
               <div>
-                <h3 className="home-step__title">Say what you sell and where you operate</h3>
+                <h3 className="home-step__title">Create your account and complete onboarding</h3>
                 <p className="home-step__text">
-                  City, neighborhood or online, and your main product or service. The more concrete,
-                  the better the guidance.
+                  Sign in, then answer the guided onboarding cards. GRIND saves your business profile,
+                  goals, constraints, and context so strategy starts from your real situation.
                 </p>
               </div>
             </li>
             <li className="home-step home-reveal">
               <span className="home-step__num">2</span>
               <div>
-                <h3 className="home-step__title">Share numbers and constraints</h3>
+                <h3 className="home-step__title">Start a chat thread for one objective</h3>
                 <p className="home-step__text">
-                  Rough revenue, goal, timeline, marketing budget (zero is fine), and what you
-                  already tried. GRIND uses this for a fair reality check.
+                  Open chat and focus each thread on one target outcome such as more leads, better
+                  conversion, higher repeat orders, or expansion in a specific area.
                 </p>
               </div>
             </li>
             <li className="home-step home-reveal">
               <span className="home-step__num">3</span>
               <div>
-                <h3 className="home-step__title">Answer follow-up questions</h3>
+                <h3 className="home-step__title">Answer GRIND’s diagnostic follow-up questions</h3>
                 <p className="home-step__text">
-                  The odd questions matter. They replace generic advice with tactics that fit your
-                  stall, salon, warehouse, or desk.
+                  GRIND asks sharp clarifying questions before giving tactics. This replaces generic
+                  marketing advice with strategy that fits your market, pricing, customer type, and timing.
                 </p>
               </div>
             </li>
             <li className="home-step home-reveal">
               <span className="home-step__num">4</span>
               <div>
-                <h3 className="home-step__title">Execute one block at a time</h3>
+                <h3 className="home-step__title">Execute, track results, and continue in threads</h3>
                 <p className="home-step__text">
-                  Ask for a shorter horizon or a smaller budget slice if needed. Come back with
-                  results so the next steps stay accurate.
+                  Run one action block, return with outcomes, and refine. Keep old threads for history,
+                  and start a new thread when your goal changes or a new campaign starts.
                 </p>
               </div>
             </li>
