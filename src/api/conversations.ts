@@ -2,6 +2,7 @@ import { apiJson } from "./http";
 
 export type ChatRole = "user" | "assistant" | "system";
 export type ModelAlias = "Chat" | "Thinking" | "Thinking2.0" | "Flash-Lite" | "Flash-Omni" | "Flash-Chat";
+export type ResponseStyle = "auto" | "short" | "bullet" | "detailed";
 
 export type ConversationMessage = {
   role: ChatRole;
@@ -49,10 +50,11 @@ export async function fetchModelOptions(): Promise<{ items: ModelOption[] }> {
 export async function sendMessage(
   conversationId: string,
   content: string,
-  model?: ModelAlias
+  model?: ModelAlias,
+  responseStyle?: ResponseStyle
 ): Promise<{ role: "assistant"; content: string; model: string }> {
   return apiJson(`/conversations/${conversationId}/messages`, {
     method: "POST",
-    body: JSON.stringify({ content, model }),
+    body: JSON.stringify({ content, model, responseStyle }),
   });
 }

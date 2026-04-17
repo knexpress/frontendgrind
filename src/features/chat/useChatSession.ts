@@ -7,10 +7,12 @@ import {
   type ConversationListItem,
   type ModelAlias,
   type ConversationMessage,
+  type ResponseStyle,
 } from "../../api/conversations";
 import { ApiError } from "../../api/http";
 
 type Status = "idle" | "loading" | "sending" | "error";
+export const MAX_CHAT_MESSAGE_CHARS = 4000;
 
 function sessionKeyForUser(userId: string): string {
   return `grind_conversation_id_${userId}`;
@@ -23,6 +25,32 @@ export function useChatSession(userId: string) {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const revealAssistantReply = useCallback(async (fullText: string) => {
+    const chunks = fullText.match(/\S+\s*/g) ?? [fullText];
+    if (chunks.length === 0) return;
+
+    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+
+    const total = chunks.length;
+    let i = 0;
+    while (i < total) {
+      const step = Math.max(1, Math.min(6, Math.ceil(total / 120)));
+      const part = chunks.slice(i, i + step).join("");
+      i += step;
+      setMessages((prev) => {
+        if (prev.length === 0) return prev;
+        const last = prev[prev.length - 1];
+        if (!last || last.role !== "assistant") return prev;
+        const next = [...prev];
+        next[next.length - 1] = { ...last, content: `${last.content}${part}` };
+        return next;
+      });
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 22);
+      });
+    }
+  }, []);
 
   const bootstrap = useCallback(async (targetId?: string) => {
     setStatus("loading");
@@ -86,10 +114,14 @@ export function useChatSession(userId: string) {
   }, [SESSION_KEY, bootstrap]);
 
   const send = useCallback(
-    async (text: string, model?: ModelAlias) => {
+    async (text: string, model?: ModelAlias, responseStyle?: ResponseStyle) => {
       if (!conversationId) return;
       const trimmed = text.trim();
       if (!trimmed) return;
+      if (trimmed.length > MAX_CHAT_MESSAGE_CHARS) {
+        setError(`Message is too long. Keep it under ${MAX_CHAT_MESSAGE_CHARS} characters.`);
+        return;
+      }
 
       setError(null);
       const userMsg: ConversationMessage = { role: "user", content: trimmed };
@@ -97,8 +129,8 @@ export function useChatSession(userId: string) {
       setStatus("sending");
 
       try {
-        const reply = await sendMessage(conversationId, trimmed, model);
-        setMessages((m) => [...m, { role: "assistant", content: reply.content }]);
+        const reply = await sendMessage(conversationId, trimmed, model, responseStyle);
+        await revealAssistantReply(reply.content);
         const latestList = await listConversations();
         setThreads(latestList.items);
         setStatus("idle");
@@ -108,7 +140,7 @@ export function useChatSession(userId: string) {
         setError(e instanceof ApiError ? e.message : "Message failed");
       }
     },
-    [conversationId]
+    [conversationId, revealAssistantReply]
   );
 
   return {

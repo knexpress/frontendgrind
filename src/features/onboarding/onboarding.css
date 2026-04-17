@@ -49,6 +49,7 @@
 .onboarding-question {
   margin: 0 0 0.75rem;
   font-size: 1.05rem;
+  line-height: 1.4;
 }
 
 .onboarding-input {
@@ -58,6 +59,41 @@
   background: rgba(12, 13, 16, 0.75);
   color: var(--text);
   padding: 0.78rem 0.9rem;
+}
+
+.onboarding-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.onboarding-option {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(12, 13, 16, 0.75);
+  color: var(--text);
+  text-align: left;
+  padding: 0.72rem 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.onboarding-option:hover:not(:disabled) {
+  border-color: rgba(201, 162, 39, 0.4);
+  background: rgba(201, 162, 39, 0.08);
+}
+
+.onboarding-option--selected {
+  border-color: rgba(201, 162, 39, 0.55);
+  background: rgba(201, 162, 39, 0.14);
+}
+
+.onboarding-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .onboarding-input--textarea {

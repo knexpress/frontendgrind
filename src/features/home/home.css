@@ -46,10 +46,10 @@
 }
 
 .home-nav__brand {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.25rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
   color: var(--accent);
   text-decoration: none;
   transition: color 0.2s ease, transform 0.2s ease;
@@ -564,10 +564,10 @@
 }
 
 .home-footer__brand {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
 }
 
 .home-footer__meta {

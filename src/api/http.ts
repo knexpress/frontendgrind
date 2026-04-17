@@ -1,9 +1,77 @@
 import { apiUrl } from "./config";
 
 let accessToken: string | null = null;
+let refreshInFlight: Promise<boolean> | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
+}
+
+function normalizePath(path: string): string {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function buildHeaders(init?: RequestInit): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return headers;
+}
+
+async function tryRefreshAccessToken(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    try {
+      const res = await fetch(apiUrl("/auth/refresh"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        setAccessToken(null);
+        return false;
+      }
+
+      const text = await res.text();
+      if (!text) {
+        setAccessToken(null);
+        return false;
+      }
+
+      let data: unknown = undefined;
+      try {
+        data = JSON.parse(text) as unknown;
+      } catch {
+        setAccessToken(null);
+        return false;
+      }
+
+      if (
+        !data ||
+        typeof data !== "object" ||
+        !("accessToken" in data) ||
+        typeof (data as { accessToken?: unknown }).accessToken !== "string"
+      ) {
+        setAccessToken(null);
+        return false;
+      }
+
+      setAccessToken((data as { accessToken: string }).accessToken);
+      return true;
+    } catch {
+      setAccessToken(null);
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
 }
 
 export class ApiError extends Error {
@@ -18,19 +86,23 @@ export class ApiError extends Error {
 }
 
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(init?.headers as Record<string, string> | undefined),
-  };
-  if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
-  }
+  const normalizedPath = normalizePath(path);
+  const execute = () =>
+    fetch(apiUrl(normalizedPath), {
+      ...init,
+      credentials: "include",
+      headers: buildHeaders(init),
+    });
 
-  const res = await fetch(apiUrl(path), {
-    ...init,
-    credentials: "include",
-    headers,
-  });
+  let res = await execute();
+
+  const isAuthEndpoint = normalizedPath.startsWith("/auth/");
+  if (res.status === 401 && !isAuthEndpoint) {
+    const refreshed = await tryRefreshAccessToken();
+    if (refreshed) {
+      res = await execute();
+    }
+  }
 
   const text = await res.text();
   let data: unknown = undefined;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import { fetchModelOptions, type ModelAlias, type ModelOption } from "../../api/conversations";
+import { fetchModelOptions, type ModelAlias, type ModelOption, type ResponseStyle } from "../../api/conversations";
 import { MessageList } from "./MessageList";
 import { Composer } from "./Composer";
 import { useChatSession } from "./useChatSession";
@@ -14,6 +14,7 @@ export function ChatView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelAlias>("Chat");
+  const [selectedResponseStyle, setSelectedResponseStyle] = useState<ResponseStyle>("auto");
 
   const busy = status === "loading" || status === "sending";
   const showTyping = status === "sending";
@@ -117,6 +118,8 @@ export function ChatView() {
               messages={messages}
               showTyping={showTyping}
               sessionLoading={sessionLoading}
+              choiceDisabled={busy}
+              onChooseAnswer={(text) => void send(text, selectedModel, selectedResponseStyle)}
             />
           </div>
 
@@ -126,7 +129,9 @@ export function ChatView() {
               modelOptions={effectiveModelOptions}
               selectedModel={selectedModel}
               onChangeModel={setSelectedModel}
-              onSend={(t, model) => void send(t, model)}
+              selectedResponseStyle={selectedResponseStyle}
+              onChangeResponseStyle={setSelectedResponseStyle}
+              onSend={(t, model, responseStyle) => void send(t, model, responseStyle)}
             />
           </div>
         </div>

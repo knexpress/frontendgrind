@@ -16,7 +16,7 @@ export const INTAKE_LLM_ANSWER_LABEL = "My answer:";
 
 /** Closing instruction after all Q&A pairs */
 export const INTAKE_LLM_CLOSING =
-  "This intake is only a starting sketch. Before recommending any tactics or plans, ask whatever you still need to know to give advice specific to my exact situation (place, offer, timing, price, customers, local seasonality). If important details are missing, reply with diagnostic questions only, not a generic multi-point plan.";
+  "Use this intake as sufficient starting context. Do not ask follow-up questions by default. Give me a concrete, prioritized action plan now. If details are missing, state your assumptions briefly and continue with recommendations.";
 
 /**
  * Builds the single user message sent to the API after all intake steps are answered.

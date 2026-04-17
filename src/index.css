@@ -1,3 +1,5 @@
+@import url("https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap");
+
 :root {
   color-scheme: dark;
   --bg: #0c0d10;
@@ -8,7 +10,9 @@
   --accent: #c9a227;
   --accent-dim: #8a7020;
   --danger: #e85d5d;
-  font-family: "DM Sans", system-ui, sans-serif;
+  --font-sans: "Chillax", "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Chillax", "DM Sans", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
   font-weight: 400;
   color: var(--text);

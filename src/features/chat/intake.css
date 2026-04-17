@@ -138,7 +138,7 @@
 }
 
 .intake-sheet__question {
-  font-family: "Fraunces", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 600;
   line-height: 1.25;
