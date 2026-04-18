@@ -88,7 +88,7 @@
 }
 
 .chat-thread-item span {
-  color: var(--muted);
+  color: #edf1f8;
   font-size: 0.8rem;
   line-height: 1.35;
 }

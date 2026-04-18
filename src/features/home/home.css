@@ -86,7 +86,7 @@
 }
 
 .home-nav__link {
-  color: var(--muted);
+  color: #edf1f8;
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -185,7 +185,7 @@
 
 .home-hero__title-accent {
   display: block;
-  background: linear-gradient(120deg, var(--text) 0%, var(--muted) 45%, var(--accent) 100%);
+  background: linear-gradient(120deg, var(--text) 0%, #edf1f8 45%, var(--accent) 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -204,7 +204,7 @@
 
 .home-hero__lead {
   font-size: 1.08rem;
-  color: var(--muted);
+  color: #edf1f8;
   max-width: 36rem;
   margin: 0 0 2rem;
   line-height: 1.65;
@@ -312,7 +312,7 @@
 
 .home-hero__stat-label {
   font-size: 0.82rem;
-  color: var(--muted);
+  color: #edf1f8;
   line-height: 1.4;
 }
 
@@ -336,7 +336,7 @@
 }
 
 .home-section__intro {
-  color: var(--muted);
+  color: #edf1f8;
   font-size: 1.05rem;
   max-width: 42rem;
   line-height: 1.65;
@@ -450,7 +450,7 @@
 
 .home-card__text {
   margin: 0;
-  color: var(--muted);
+  color: #edf1f8;
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -515,7 +515,7 @@
 
 .home-step__text {
   margin: 0;
-  color: var(--muted);
+  color: #edf1f8;
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -547,7 +547,7 @@
 .home-cta-band__text {
   margin: 0 auto 1.75rem;
   max-width: 28rem;
-  color: var(--muted);
+  color: #edf1f8;
   font-size: 0.98rem;
   line-height: 1.55;
 }
@@ -572,7 +572,7 @@
 
 .home-footer__meta {
   font-size: 0.85rem;
-  color: var(--muted);
+  color: #edf1f8;
 }
 
 @media (max-width: 700px) {
