@@ -13,8 +13,8 @@
   padding: 1.4rem 1.3rem;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: rgba(20, 22, 28, 0.82);
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+  background: var(--card-bg);
+  box-shadow: var(--elev-shadow);
 }
 
 .auth-brand {
@@ -62,7 +62,7 @@
 .auth-input {
   width: 100%;
   border: 1px solid var(--border);
-  background: rgba(12, 13, 16, 0.8);
+  background: var(--input-bg);
   color: var(--text);
   border-radius: 10px;
   padding: 0.7rem 0.8rem;

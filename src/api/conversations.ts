@@ -4,9 +4,17 @@ export type ChatRole = "user" | "assistant" | "system";
 export type ModelAlias = "Chat" | "Thinking" | "Thinking2.0" | "Flash-Lite" | "Flash-Omni" | "Flash-Chat";
 export type ResponseStyle = "auto" | "short" | "bullet" | "detailed";
 
+export type SourceReference = {
+  title: string;
+  url: string;
+  snippet: string;
+  provider: string;
+};
+
 export type ConversationMessage = {
   role: ChatRole;
   content: string;
+  sources?: SourceReference[];
   createdAt?: string;
 };
 
@@ -52,7 +60,7 @@ export async function sendMessage(
   content: string,
   model?: ModelAlias,
   responseStyle?: ResponseStyle
-): Promise<{ role: "assistant"; content: string; model: string }> {
+): Promise<{ role: "assistant"; content: string; model: string; sources?: SourceReference[] }> {
   return apiJson(`/conversations/${conversationId}/messages`, {
     method: "POST",
     body: JSON.stringify({ content, model, responseStyle }),

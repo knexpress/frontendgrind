@@ -78,6 +78,16 @@ function parseNumberedSteps(content: string): string[] {
   return steps.filter((s) => s.length > 0);
 }
 
+function sanitizeHref(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 export function MessageList({
   messages,
   showTyping,
@@ -121,6 +131,15 @@ export function MessageList({
             .some((next) => next.role === "user");
           const showChoiceUi = choiceQuestions.length > 0 && !hasUserReplyAfter;
           const canShowStepMode = m.role === "assistant" && !showChoiceUi && planSteps.length >= 2;
+          const safeSources =
+            m.role === "assistant"
+              ? (m.sources ?? [])
+                  .map((source) => ({ ...source, url: sanitizeHref(source.url) }))
+                  .filter(
+                    (source): source is { title: string; url: string; snippet: string; provider: string } =>
+                      Boolean(source.url)
+                  )
+              : [];
           const isExpanded = Boolean(expandedByMessage[messageKey]);
           const activeStepIndex = Math.max(
             0,
@@ -199,6 +218,27 @@ export function MessageList({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {m.role === "assistant" && safeSources.length > 0 && (
+                <div className="message-sources" aria-label="References">
+                  <p className="message-sources__title">References</p>
+                  <ul className="message-sources__list">
+                    {safeSources.map((source, sourceIndex) => (
+                      <li key={`${messageKey}-source-${sourceIndex}`}>
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="message-sources__link"
+                          title={source.snippet || source.title}
+                        >
+                          {source.title}
+                          <span className="message-sources__provider">{source.provider}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </li>

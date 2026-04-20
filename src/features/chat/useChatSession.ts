@@ -8,6 +8,7 @@ import {
   type ModelAlias,
   type ConversationMessage,
   type ResponseStyle,
+  type SourceReference,
 } from "../../api/conversations";
 import { ApiError } from "../../api/http";
 
@@ -26,11 +27,11 @@ export function useChatSession(userId: string) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const revealAssistantReply = useCallback(async (fullText: string) => {
+  const revealAssistantReply = useCallback(async (fullText: string, sources: SourceReference[] = []) => {
     const chunks = fullText.match(/\S+\s*/g) ?? [fullText];
     if (chunks.length === 0) return;
 
-    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+    setMessages((m) => [...m, { role: "assistant", content: "", sources: [] }]);
 
     const total = chunks.length;
     let i = 0;
@@ -50,6 +51,15 @@ export function useChatSession(userId: string) {
         window.setTimeout(resolve, 22);
       });
     }
+
+    setMessages((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (!last || last.role !== "assistant") return prev;
+      const next = [...prev];
+      next[next.length - 1] = { ...last, sources };
+      return next;
+    });
   }, []);
 
   const bootstrap = useCallback(async (targetId?: string) => {
@@ -130,7 +140,7 @@ export function useChatSession(userId: string) {
 
       try {
         const reply = await sendMessage(conversationId, trimmed, model, responseStyle);
-        await revealAssistantReply(reply.content);
+        await revealAssistantReply(reply.content, reply.sources ?? []);
         const latestList = await listConversations();
         setThreads(latestList.items);
         setStatus("idle");

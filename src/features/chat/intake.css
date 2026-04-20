@@ -24,7 +24,7 @@
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   cursor: pointer;
   animation: intake-backdrop-in 0.4s ease both;
@@ -49,7 +49,7 @@
   border-radius: 20px 20px 0 0;
   border: 1px solid var(--border);
   border-bottom: none;
-  background: linear-gradient(180deg, #1a1c24 0%, #12141a 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
   box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.55);
   animation: intake-sheet-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -86,7 +86,7 @@
   justify-content: center;
   border: none;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card-bg-soft);
   color: var(--text);
   font-size: 1.25rem;
   line-height: 1;
@@ -134,7 +134,7 @@
 
 .intake-sheet__close:hover:not(:disabled) {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card-bg-soft);
 }
 
 .intake-sheet__question {
@@ -154,7 +154,7 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow: hidden;
-  background: rgba(12, 13, 16, 0.5);
+  background: var(--card-bg-soft);
 }
 
 .intake-options li + li {
@@ -214,7 +214,7 @@
   padding: 0.65rem 0.85rem;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(12, 13, 16, 0.75);
+  background: var(--input-bg);
 }
 
 .intake-custom__icon {
