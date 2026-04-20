@@ -167,8 +167,9 @@ export function ChatView() {
                     className={`chat-thread-item${conversationId === t.id ? " is-active" : ""}`}
                     onClick={() => void handleOpenConversation(t.id)}
                   >
-                    <strong>{t.title || "Untitled chat"}</strong>
-                    <span>{t.lastMessagePreview || "No messages yet"}</span>
+                    <span className="chat-thread-item__summary">
+                      {t.lastMessagePreview || t.title || "No messages yet"}
+                    </span>
                   </button>
                 </li>
               ))}
