@@ -8,6 +8,19 @@
     var(--bg);
 }
 
+.auth-page--login {
+  padding: 1.2rem;
+}
+
+.auth-layout {
+  width: min(100%, 1120px);
+  min-height: min(92vh, 760px);
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) minmax(380px, 1fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+
 .auth-card {
   width: min(100%, 460px);
   padding: 1.4rem 1.3rem;
@@ -15,6 +28,14 @@
   border-radius: 16px;
   background: var(--card-bg);
   box-shadow: var(--elev-shadow);
+}
+
+.auth-card--login {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .auth-brand {
@@ -27,6 +48,13 @@
 .auth-title {
   margin: 0.45rem 0 0;
   font-size: 1.35rem;
+}
+
+.auth-title--hero {
+  margin-top: 0.8rem;
+  font-size: clamp(1.8rem, 3.4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
 }
 
 .auth-sub {
@@ -95,6 +123,19 @@
   color: #111;
 }
 
+.auth-google-wrap {
+  margin-top: 0.3rem;
+}
+
+.auth-google-gsi {
+  width: 100%;
+  min-height: 48px;
+}
+
+.auth-google-gsi > div {
+  width: 100% !important;
+}
+
 .auth-submit:disabled,
 .auth-google:disabled {
   opacity: 0.6;
@@ -129,6 +170,48 @@
   text-decoration: none;
 }
 
+.auth-video-panel {
+  border-radius: 18px;
+  background: #f8f7f5;
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.2);
+}
+
+.auth-video-placeholder {
+  color: #595959;
+  font-size: 1.2rem;
+  letter-spacing: 0.01em;
+}
+
+.auth-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+  background: #f8f7f5;
+}
+
+@media (max-width: 940px) {
+  .auth-layout {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .auth-card--login {
+    max-width: 560px;
+  }
+
+  .auth-video-panel {
+    min-height: 340px;
+  }
+}
+
 @media (max-width: 520px) {
   .auth-page {
     padding: 0.9rem;
@@ -145,6 +228,10 @@
 
   .auth-sub {
     font-size: 0.88rem;
+  }
+
+  .auth-video-panel {
+    min-height: 260px;
   }
 
   .auth-submit,

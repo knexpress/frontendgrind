@@ -36,6 +36,16 @@ export function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/chat/recents"
+          element={
+            <RequireAuth>
+              <RequireOnboarding>
+                <ChatView />
+              </RequireOnboarding>
+            </RequireAuth>
+          }
+        />
       </Routes>
     </>
   );

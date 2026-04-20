@@ -60,6 +60,15 @@ export function loginWithGoogle(baseApi: string) {
   window.location.href = `${baseApi.replace(/\/$/, "")}/auth/google`;
 }
 
+export async function loginWithGoogleCredential(credential: string): Promise<AuthSession> {
+  const data = await apiJson<AuthResponse>("/auth/google/token", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+  applyToken(data.accessToken);
+  return { user: data.user, onboardingCompleted: data.onboardingCompleted };
+}
+
 export function completeGoogleLogin(accessToken: string) {
   setAccessToken(accessToken);
 }

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import {
   completeGoogleLogin,
   login,
+  loginWithGoogleCredential,
   loginWithGoogle,
   logout,
   refreshSession,
@@ -21,6 +22,7 @@ type AuthContextValue = {
   register: (fullName: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   startGoogleLogin: () => void;
+  loginWithGoogleCredential: (credential: string) => Promise<void>;
   completeGoogleCallback: (accessToken: string) => Promise<void>;
   markOnboardingCompleted: () => void;
 };
@@ -80,6 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       startGoogleLogin() {
         loginWithGoogle(apiUrl(""));
+      },
+      async loginWithGoogleCredential(credential: string) {
+        const session = await loginWithGoogleCredential(credential);
+        setUser(session.user);
+        setOnboardingCompleted(session.onboardingCompleted);
+        setStatus("authenticated");
       },
       async completeGoogleCallback(accessToken: string) {
         completeGoogleLogin(accessToken);

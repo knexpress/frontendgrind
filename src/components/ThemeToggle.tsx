@@ -5,6 +5,7 @@ export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const isLight = theme === "light";
   const { pathname } = useLocation();
+  if (pathname === "/auth/login") return null;
   const inChat = pathname.startsWith("/chat");
   const baseClass = inChat ? "theme-toggle theme-toggle--chat" : "theme-toggle";
 
