@@ -130,7 +130,7 @@ export function ChatView() {
     <div className="chat-shell">
       <div className="chat-body chat-body--claude">
         <aside className="chat-sidebar chat-sidebar--claude">
-          <div className="chat-sidebar__logo">Claude</div>
+          <div className="chat-sidebar__logo">Grind</div>
 
           <nav className="chat-nav" aria-label="Primary">
             <button type="button" className="chat-nav__item" onClick={() => void handleNewChat()}>
