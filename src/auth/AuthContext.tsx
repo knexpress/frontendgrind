@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   completeGoogleLogin,
+  fetchMe,
   login,
   loginWithGoogleCredential,
   loginWithGoogle,
@@ -10,7 +11,7 @@ import {
   type AuthUser,
 } from "../api/auth";
 import { apiUrl } from "../api/config";
-import { setAccessToken } from "../api/http";
+import { getStoredAccessToken, setAccessToken } from "../api/http";
 
 type AuthStatus = "loading" | "authenticated" | "guest";
 
@@ -37,6 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     async function init() {
+      const persistedToken = getStoredAccessToken();
+      if (persistedToken) {
+        setAccessToken(persistedToken);
+      }
       try {
         const session = await refreshSession();
         if (!mounted) return;
@@ -45,6 +50,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus("authenticated");
       } catch {
         if (!mounted) return;
+        if (persistedToken) {
+          try {
+            const session = await fetchMe();
+            if (!mounted) return;
+            setUser(session.user);
+            setOnboardingCompleted(session.onboardingCompleted);
+            setStatus("authenticated");
+            return;
+          } catch {
+            // fallback to guest below
+          }
+        }
         setAccessToken(null);
         setUser(null);
         setOnboardingCompleted(false);

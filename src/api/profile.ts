@@ -2,19 +2,15 @@ import { apiJson } from "./http";
 
 export type StrategyProfile = {
   ownerName: string;
-  businessName: string;
   businessType: string;
-  primaryOffer: string;
   marketLocation: string;
-  operatingHours: string;
-  targetCustomer: string;
-  averagePricePoint: string;
-  currentSituation: string;
-  mainGoal: string;
+  operatingDuration: string;
+  staffCount: string;
+  monthlyRevenue: string;
+  revenueGoal: string;
+  goalDeadline: string;
   monthlyBudget: string;
-  attemptedBefore: string;
-  timeline: string;
-  seasonalityNotes: string;
+  marketingHistory: string;
 };
 
 export type OnboardingPayload = {

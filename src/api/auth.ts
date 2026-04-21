@@ -51,6 +51,11 @@ export async function refreshSession(): Promise<AuthSession> {
   return { user: data.user, onboardingCompleted: data.onboardingCompleted };
 }
 
+export async function fetchMe(): Promise<AuthSession> {
+  const data = await apiJson<{ user: AuthUser; onboardingCompleted: boolean }>("/auth/me", { method: "GET" });
+  return { user: data.user, onboardingCompleted: data.onboardingCompleted };
+}
+
 export async function logout(): Promise<void> {
   await apiJson<unknown>("/auth/logout", { method: "POST" });
   setAccessToken(null);

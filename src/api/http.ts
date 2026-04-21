@@ -2,9 +2,28 @@ import { apiUrl } from "./config";
 
 let accessToken: string | null = null;
 let refreshInFlight: Promise<boolean> | null = null;
+const ACCESS_TOKEN_STORAGE_KEY = "grind_access_token";
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
+  try {
+    if (token) {
+      window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, token);
+    } else {
+      window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    // ignore storage failures (private mode, blocked storage, etc.)
+  }
+}
+
+export function getStoredAccessToken(): string | null {
+  try {
+    const token = window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+    return token && token.trim() ? token : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizePath(path: string): string {

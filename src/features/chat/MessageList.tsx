@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import type { ConversationMessage } from "../../api/conversations";
 import { TypingIndicator } from "./TypingIndicator";
 
@@ -88,6 +89,116 @@ function sanitizeHref(url: string): string | null {
   }
 }
 
+function normalizeTitleForMatch(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function findSourceByLine(line: string, sources?: ConversationMessage["sources"]) {
+  const sourceList = sources ?? [];
+  if (sourceList.length === 0) return null;
+  const lineNorm = normalizeTitleForMatch(line);
+  if (!lineNorm) return null;
+  for (const src of sourceList) {
+    const srcNorm = normalizeTitleForMatch(src.title);
+    if (!srcNorm) continue;
+    if (lineNorm === srcNorm) return src;
+    if (lineNorm.includes(srcNorm) || srcNorm.includes(lineNorm)) return src;
+  }
+  return null;
+}
+
+function isStandaloneSourceTitleLine(line: string, sources: ConversationMessage["sources"]): boolean {
+  const trimmed = line.trim();
+  if (!trimmed) return false;
+  if (/^source:/i.test(trimmed)) return false;
+  if (/https?:\/\//i.test(trimmed)) return false;
+  return Boolean(findSourceByLine(trimmed, sources));
+}
+
+function renderTextWithReferenceButtons(content: string, sources?: ConversationMessage["sources"]): ReactNode {
+  const lines = content.split("\n");
+  // Accept both "(Source: title - https://...)" and "Source: title - https://..."
+  // with flexible titles that may include hyphens/punctuation.
+  const citationPattern = /\(?Source:\s*(.+?)\s*-\s*(https?:\/\/[^\s)]+)\)?/gi;
+
+  const refsByLineIndex = new Map<number, Array<{ title: string; url: string }>>();
+  const detachedRefs: Array<{ title: string; url: string }> = [];
+  const filteredLines: string[] = [];
+
+  for (const line of lines) {
+    if (!isStandaloneSourceTitleLine(line, sources)) {
+      filteredLines.push(line);
+      continue;
+    }
+    const matched = findSourceByLine(line, sources);
+    const safeUrl = matched ? sanitizeHref(matched.url) : null;
+    if (!safeUrl) continue;
+    detachedRefs.push({ title: matched?.title || "Source", url: safeUrl });
+  }
+
+  // Spread detached bibliography refs across the response body instead of stacking at the end.
+  const candidateLineIndexes = filteredLines
+    .map((line, idx) => ({ line, idx }))
+    .filter(({ line }) => Boolean(line.trim()))
+    .map(({ idx }) => idx);
+  if (candidateLineIndexes.length > 0 && detachedRefs.length > 0) {
+    const totalCandidates = candidateLineIndexes.length;
+    const maxPreferredPos = Math.max(0, Math.floor(totalCandidates * 0.72) - 1);
+    const preferredIndexes = candidateLineIndexes.slice(0, maxPreferredPos + 1);
+    const placementPool = preferredIndexes.length > 0 ? preferredIndexes : candidateLineIndexes;
+    const totalPlacement = placementPool.length;
+    const totalRefs = detachedRefs.length;
+    detachedRefs.forEach((ref, refIdx) => {
+      const distributedPos = Math.floor(((refIdx + 1) * totalPlacement) / (totalRefs + 1));
+      const targetIndex = placementPool[Math.min(totalPlacement - 1, Math.max(0, distributedPos))]!;
+      const list = refsByLineIndex.get(targetIndex) ?? [];
+      list.push(ref);
+      refsByLineIndex.set(targetIndex, list);
+    });
+  }
+
+  return (
+    <>
+      {filteredLines.map((line, lineIndex) => {
+        const refs: Array<{ title: string; url: string }> = [];
+        const cleaned = line.replace(citationPattern, (_whole, title: string, url: string) => {
+          const safeUrl = sanitizeHref(url);
+          if (!safeUrl) return "";
+          refs.push({ title: title.trim(), url: safeUrl });
+          return "";
+        });
+        const trailingRefs = refsByLineIndex.get(lineIndex) ?? [];
+        const allRefs = [...refs, ...trailingRefs];
+        const trimmedCleaned = cleaned.replace(/\s{2,}/g, " ").replace(/\s+([,.;:!?])/g, "$1").trimEnd();
+
+        return (
+          <span key={`line-${lineIndex}`}>
+            {trimmedCleaned}
+            {allRefs.map((ref, refIndex) => (
+              <a
+                key={`line-${lineIndex}-ref-${refIndex}`}
+                className="message-inline-ref-btn"
+                href={ref.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                title={ref.title || "Reference"}
+              >
+                {ref.title || "Source"}
+              </a>
+            ))}
+            {lineIndex < filteredLines.length - 1 ? <br /> : null}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 export function MessageList({
   messages,
   showTyping,
@@ -131,15 +242,6 @@ export function MessageList({
             .some((next) => next.role === "user");
           const showChoiceUi = choiceQuestions.length > 0 && !hasUserReplyAfter;
           const canShowStepMode = m.role === "assistant" && !showChoiceUi && planSteps.length >= 2;
-          const safeSources =
-            m.role === "assistant"
-              ? (m.sources ?? [])
-                  .map((source) => ({ ...source, url: sanitizeHref(source.url) }))
-                  .filter(
-                    (source): source is { title: string; url: string; snippet: string; provider: string } =>
-                      Boolean(source.url)
-                  )
-              : [];
           const isExpanded = Boolean(expandedByMessage[messageKey]);
           const activeStepIndex = Math.max(
             0,
@@ -155,7 +257,9 @@ export function MessageList({
               <span className="message__label">{m.role === "user" ? "You" : "GRIND"}</span>
               {canShowStepMode && !isExpanded ? (
                 <div className="message-stepper" aria-label="Step-by-step response">
-                  <p className="message-stepper__text">{planSteps[activeStepIndex]}</p>
+                  <p className="message-stepper__text">
+                    {renderTextWithReferenceButtons(planSteps[activeStepIndex] ?? "", m.sources)}
+                  </p>
                   <div className="message-stepper__controls">
                     <button
                       type="button"
@@ -196,7 +300,7 @@ export function MessageList({
                   </button>
                 </div>
               ) : (
-                <p className="message__text">{m.content}</p>
+                <p className="message__text">{renderTextWithReferenceButtons(m.content, m.sources)}</p>
               )}
               {showChoiceUi && (
                 <div className="message-choices" aria-label="Suggested answers">
@@ -218,27 +322,6 @@ export function MessageList({
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-              {m.role === "assistant" && safeSources.length > 0 && (
-                <div className="message-sources" aria-label="References">
-                  <p className="message-sources__title">References</p>
-                  <ul className="message-sources__list">
-                    {safeSources.map((source, sourceIndex) => (
-                      <li key={`${messageKey}-source-${sourceIndex}`}>
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="message-sources__link"
-                          title={source.snippet || source.title}
-                        >
-                          {source.title}
-                          <span className="message-sources__provider">{source.provider}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               )}
             </li>
