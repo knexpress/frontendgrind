@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   createConversation,
+  editMessage,
   fetchConversation,
   listConversations,
   sendMessage,
@@ -124,7 +125,46 @@ export function useChatSession(userId: string) {
   }, [SESSION_KEY, bootstrap]);
 
   const send = useCallback(
-    async (text: string, model?: ModelAlias, responseStyle?: ResponseStyle) => {
+    async (text: string, model?: ModelAlias, responseStyle?: ResponseStyle, imageFile?: File | null) => {
+      if (!conversationId) return;
+      const trimmed = text.trim();
+      if (!trimmed && !imageFile) return;
+      if (trimmed.length > MAX_CHAT_MESSAGE_CHARS) {
+        setError(`Message is too long. Keep it under ${MAX_CHAT_MESSAGE_CHARS} characters.`);
+        return;
+      }
+
+      setError(null);
+      const imagePreviewUrl = imageFile ? URL.createObjectURL(imageFile) : undefined;
+      const userMsg: ConversationMessage = {
+        role: "user",
+        content: trimmed,
+        localImagePreviewUrl: imagePreviewUrl,
+        localImageName: imageFile?.name,
+      };
+      setMessages((m) => [...m, userMsg]);
+      setStatus("sending");
+
+      try {
+        const reply = await sendMessage(conversationId, trimmed, model, responseStyle, imageFile);
+        await revealAssistantReply(reply.content, reply.sources ?? []);
+        const latestList = await listConversations();
+        setThreads(latestList.items);
+        setStatus("idle");
+      } catch (e) {
+        if (imagePreviewUrl) {
+          URL.revokeObjectURL(imagePreviewUrl);
+        }
+        setMessages((m) => m.slice(0, -1));
+        setStatus("idle");
+        setError(e instanceof ApiError ? e.message : "Message failed");
+      }
+    },
+    [conversationId, revealAssistantReply]
+  );
+
+  const editAndResend = useCallback(
+    async (messageIndex: number, text: string, model?: ModelAlias, responseStyle?: ResponseStyle) => {
       if (!conversationId) return;
       const trimmed = text.trim();
       if (!trimmed) return;
@@ -134,20 +174,25 @@ export function useChatSession(userId: string) {
       }
 
       setError(null);
-      const userMsg: ConversationMessage = { role: "user", content: trimmed };
-      setMessages((m) => [...m, userMsg]);
+      setMessages((prev) => [...prev.slice(0, messageIndex), { role: "user", content: trimmed }]);
       setStatus("sending");
 
       try {
-        const reply = await sendMessage(conversationId, trimmed, model, responseStyle);
+        const reply = await editMessage(conversationId, messageIndex, trimmed, model, responseStyle);
         await revealAssistantReply(reply.content, reply.sources ?? []);
         const latestList = await listConversations();
         setThreads(latestList.items);
         setStatus("idle");
       } catch (e) {
-        setMessages((m) => m.slice(0, -1));
+        // Reload authoritative conversation state after failed edit attempt.
+        try {
+          const conv = await fetchConversation(conversationId);
+          setMessages(conv.messages);
+        } catch {
+          // keep optimistic state if reload fails; error banner still shown
+        }
         setStatus("idle");
-        setError(e instanceof ApiError ? e.message : "Message failed");
+        setError(e instanceof ApiError ? e.message : "Message edit failed");
       }
     },
     [conversationId, revealAssistantReply]
@@ -160,6 +205,7 @@ export function useChatSession(userId: string) {
     status,
     error,
     send,
+    editAndResend,
     openConversation: bootstrap,
     createNewConversation: async () => {
       const created = await createConversation();

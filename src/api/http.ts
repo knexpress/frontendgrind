@@ -31,10 +31,15 @@ function normalizePath(path: string): string {
 }
 
 function buildHeaders(init?: RequestInit): Record<string, string> {
+  const isFormDataBody = typeof FormData !== "undefined" && init?.body instanceof FormData;
+  const incoming = (init?.headers as Record<string, string> | undefined) ?? {};
+  const hasContentType = Object.keys(incoming).some((k) => k.toLowerCase() === "content-type");
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(init?.headers as Record<string, string> | undefined),
+    ...incoming,
   };
+  if (!isFormDataBody && !hasContentType) {
+    headers["Content-Type"] = "application/json";
+  }
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }

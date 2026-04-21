@@ -9,6 +9,8 @@ type Props = {
   sessionLoading: boolean;
   choiceDisabled: boolean;
   onChooseAnswer: (text: string) => void;
+  onEditUserMessage: (messageIndex: number, text: string) => void;
+  editDisabled: boolean;
 };
 
 type ParsedChoiceQuestion = {
@@ -205,9 +207,13 @@ export function MessageList({
   sessionLoading,
   choiceDisabled,
   onChooseAnswer,
+  onEditUserMessage,
+  editDisabled,
 }: Props) {
   const [stepIndexByMessage, setStepIndexByMessage] = useState<Record<string, number>>({});
   const [expandedByMessage, setExpandedByMessage] = useState<Record<string, boolean>>({});
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState("");
   const showEmptyHint = messages.length === 0 && !sessionLoading && !showTyping;
 
   return (
@@ -255,6 +261,11 @@ export function MessageList({
               style={{ animationDelay: `${Math.min(i * 0.04, 0.4)}s` }}
             >
               <span className="message__label">{m.role === "user" ? "You" : "GRIND"}</span>
+              {m.role === "user" && m.localImagePreviewUrl ? (
+                <div className="message-user-image">
+                  <img src={m.localImagePreviewUrl} alt={m.localImageName || "Attached image"} />
+                </div>
+              ) : null}
               {canShowStepMode && !isExpanded ? (
                 <div className="message-stepper" aria-label="Step-by-step response">
                   <p className="message-stepper__text">
@@ -300,8 +311,62 @@ export function MessageList({
                   </button>
                 </div>
               ) : (
-                <p className="message__text">{renderTextWithReferenceButtons(m.content, m.sources)}</p>
+                m.content.trim() ? <p className="message__text">{renderTextWithReferenceButtons(m.content, m.sources)}</p> : null
               )}
+              {m.role === "user" ? (
+                <div className="message-user-actions">
+                  {editingIndex === i ? (
+                    <div className="message-user-edit">
+                      <textarea
+                        className="message-user-edit__input"
+                        value={editDraft}
+                        rows={3}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        disabled={editDisabled}
+                      />
+                      <div className="message-user-edit__buttons">
+                        <button
+                          type="button"
+                          className="message-user-edit__btn"
+                          onClick={() => {
+                            setEditingIndex(null);
+                            setEditDraft("");
+                          }}
+                          disabled={editDisabled}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="message-user-edit__btn message-user-edit__btn--primary"
+                          onClick={() => {
+                            const trimmed = editDraft.trim();
+                            if (!trimmed) return;
+                            onEditUserMessage(i, trimmed);
+                            setEditingIndex(null);
+                            setEditDraft("");
+                          }}
+                          disabled={editDisabled || !editDraft.trim()}
+                        >
+                          Save and resend
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="message-user-actions__edit"
+                      onClick={() => {
+                        setEditingIndex(i);
+                        setEditDraft(m.content);
+                      }}
+                      disabled={editDisabled}
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+              ) : null}
               {showChoiceUi && (
                 <div className="message-choices" aria-label="Suggested answers">
                   {choiceQuestions.map((choice, qIndex) => (

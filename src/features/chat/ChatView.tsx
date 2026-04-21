@@ -11,7 +11,7 @@ export function ChatView() {
   const auth = useAuth();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { conversationId, threads, messages, status, error, send, retry, openConversation, createNewConversation } =
+  const { conversationId, threads, messages, status, error, send, editAndResend, retry, openConversation, createNewConversation } =
     useChatSession(auth.user!.id);
   const scrollRef = useRef<HTMLDivElement>(null);
   const openedFromUrlRef = useRef<string | null>(null);
@@ -248,7 +248,7 @@ export function ChatView() {
                       onChangeModel={setSelectedModel}
                       selectedResponseStyle={selectedResponseStyle}
                       onChangeResponseStyle={setSelectedResponseStyle}
-                      onSend={(t, model, responseStyle) => void send(t, model, responseStyle)}
+                      onSend={(t, model, responseStyle, imageFile) => void send(t, model, responseStyle, imageFile)}
                     />
                   </div>
                 </section>
@@ -269,6 +269,10 @@ export function ChatView() {
                       sessionLoading={sessionLoading}
                       choiceDisabled={busy}
                       onChooseAnswer={(text) => void send(text, selectedModel, selectedResponseStyle)}
+                      onEditUserMessage={(messageIndex, text) =>
+                        void editAndResend(messageIndex, text, selectedModel, selectedResponseStyle)
+                      }
+                      editDisabled={busy}
                     />
                   </div>
 
@@ -280,7 +284,7 @@ export function ChatView() {
                       onChangeModel={setSelectedModel}
                       selectedResponseStyle={selectedResponseStyle}
                       onChangeResponseStyle={setSelectedResponseStyle}
-                      onSend={(t, model, responseStyle) => void send(t, model, responseStyle)}
+                      onSend={(t, model, responseStyle, imageFile) => void send(t, model, responseStyle, imageFile)}
                     />
                   </div>
                 </>

@@ -824,6 +824,76 @@
   font-weight: 600;
 }
 
+.message-user-actions {
+  margin-bottom: 0.45rem;
+}
+
+.message-user-image {
+  margin: 0.35rem 0 0.55rem;
+}
+
+.message-user-image img {
+  max-width: min(100%, 340px);
+  max-height: 220px;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.message-user-actions__edit {
+  border: 1px solid var(--border);
+  background: var(--card-bg-soft);
+  color: var(--text);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+}
+
+.message-user-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.message-user-edit__input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 0.52rem 0.58rem;
+  resize: vertical;
+}
+
+.message-user-edit__buttons {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.message-user-edit__btn {
+  border: 1px solid var(--border);
+  background: var(--card-bg-soft);
+  color: var(--text);
+  border-radius: 9px;
+  font-size: 0.76rem;
+  padding: 0.28rem 0.58rem;
+  cursor: pointer;
+}
+
+.message-user-edit__btn--primary {
+  border-color: rgba(201, 162, 39, 0.4);
+  background: rgba(201, 162, 39, 0.14);
+}
+
+.message-user-actions__edit:disabled,
+.message-user-edit__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .message__text {
   margin: 0;
   white-space: pre-wrap;
@@ -1167,12 +1237,17 @@
   }
 }
 
-.composer__input {
+.composer__input-wrap {
+  position: relative;
   flex: 1;
+  width: 100%;
+}
+
+.composer__input {
   width: 100%;
   resize: vertical;
   min-height: 4.65rem;
-  padding: 0.95rem 1.05rem;
+  padding: 0.95rem 2.9rem 1.95rem 1.05rem;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--input-bg);
@@ -1209,6 +1284,83 @@
     transform 0.2s ease,
     box-shadow 0.25s ease,
     opacity 0.2s ease;
+}
+
+.composer__image-upload {
+  position: absolute;
+  right: 0.72rem;
+  bottom: 0.7rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg-soft);
+  color: var(--muted);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.composer__image-upload input {
+  display: none;
+}
+
+.composer__image-upload svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.composer__image-upload:hover {
+  border-color: rgba(201, 162, 39, 0.45);
+  color: var(--text);
+}
+
+.composer__image-upload.is-selected {
+  border-color: rgba(201, 162, 39, 0.55);
+  background: rgba(201, 162, 39, 0.16);
+  color: var(--text);
+}
+
+.composer__image-preview {
+  position: absolute;
+  right: 3.15rem;
+  bottom: 0.56rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.24rem 0.34rem;
+  max-width: 56%;
+}
+
+.composer__image-preview img {
+  width: 2.1rem;
+  height: 2.1rem;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.composer__image-preview-remove {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.composer__image-preview-remove:hover {
+  color: var(--text);
 }
 
 @media (max-width: 559px) {

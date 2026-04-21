@@ -16,6 +16,8 @@ export type ConversationMessage = {
   content: string;
   sources?: SourceReference[];
   createdAt?: string;
+  localImagePreviewUrl?: string;
+  localImageName?: string;
 };
 
 export type ConversationDto = {
@@ -59,10 +61,35 @@ export async function sendMessage(
   conversationId: string,
   content: string,
   model?: ModelAlias,
-  responseStyle?: ResponseStyle
+  responseStyle?: ResponseStyle,
+  imageFile?: File | null
 ): Promise<{ role: "assistant"; content: string; model: string; sources?: SourceReference[] }> {
+  if (imageFile) {
+    const form = new FormData();
+    form.append("content", content);
+    if (model) form.append("model", model);
+    if (responseStyle) form.append("responseStyle", responseStyle);
+    form.append("image", imageFile);
+    return apiJson(`/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: form,
+    });
+  }
   return apiJson(`/conversations/${conversationId}/messages`, {
     method: "POST",
+    body: JSON.stringify({ content, model, responseStyle }),
+  });
+}
+
+export async function editMessage(
+  conversationId: string,
+  messageIndex: number,
+  content: string,
+  model?: ModelAlias,
+  responseStyle?: ResponseStyle
+): Promise<{ role: "assistant"; content: string; model: string; sources?: SourceReference[] }> {
+  return apiJson(`/conversations/${conversationId}/messages/${messageIndex}`, {
+    method: "PATCH",
     body: JSON.stringify({ content, model, responseStyle }),
   });
 }
