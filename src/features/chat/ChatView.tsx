@@ -272,6 +272,9 @@ export function ChatView() {
                       onEditUserMessage={(messageIndex, text) =>
                         void editAndResend(messageIndex, text, selectedModel, selectedResponseStyle)
                       }
+                      onRegenerateUserMessage={(messageIndex, text) =>
+                        void editAndResend(messageIndex, text, selectedModel, selectedResponseStyle)
+                      }
                       editDisabled={busy}
                     />
                   </div>

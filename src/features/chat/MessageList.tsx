@@ -10,6 +10,7 @@ type Props = {
   choiceDisabled: boolean;
   onChooseAnswer: (text: string) => void;
   onEditUserMessage: (messageIndex: number, text: string) => void;
+  onRegenerateUserMessage: (messageIndex: number, text: string) => void;
   editDisabled: boolean;
 };
 
@@ -208,12 +209,14 @@ export function MessageList({
   choiceDisabled,
   onChooseAnswer,
   onEditUserMessage,
+  onRegenerateUserMessage,
   editDisabled,
 }: Props) {
   const [stepIndexByMessage, setStepIndexByMessage] = useState<Record<string, number>>({});
   const [expandedByMessage, setExpandedByMessage] = useState<Record<string, boolean>>({});
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const showEmptyHint = messages.length === 0 && !sessionLoading && !showTyping;
 
   return (
@@ -353,17 +356,61 @@ export function MessageList({
                       </div>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      className="message-user-actions__edit"
-                      onClick={() => {
-                        setEditingIndex(i);
-                        setEditDraft(m.content);
-                      }}
-                      disabled={editDisabled}
-                    >
-                      Edit
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="message-user-actions__icon-btn"
+                        onClick={() => {
+                          setEditingIndex(i);
+                          setEditDraft(m.content);
+                        }}
+                        disabled={editDisabled}
+                        aria-label="Edit message"
+                        title="Edit message"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5.6 17.1V20Z" />
+                          <path d="M13.5 6.5l3 3" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className={`message-user-actions__icon-btn${copiedIndex === i ? " is-success" : ""}`}
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(m.content);
+                            setCopiedIndex(i);
+                            window.setTimeout(() => setCopiedIndex((prev) => (prev === i ? null : prev)), 1200);
+                          } catch {
+                            setCopiedIndex(null);
+                          }
+                        }}
+                        disabled={editDisabled || !m.content.trim()}
+                        aria-label="Copy message"
+                        title={copiedIndex === i ? "Copied" : "Copy message"}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <rect x="9" y="9" width="10" height="10" rx="2" />
+                          <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="message-user-actions__icon-btn"
+                        onClick={() => {
+                          if (!m.content.trim()) return;
+                          onRegenerateUserMessage(i, m.content);
+                        }}
+                        disabled={editDisabled || !m.content.trim()}
+                        aria-label="Regenerate response"
+                        title="Regenerate response"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M21 12a9 9 0 1 1-2.6-6.4" />
+                          <path d="M21 4v6h-6" />
+                        </svg>
+                      </button>
+                    </>
                   )}
                 </div>
               ) : null}

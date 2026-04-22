@@ -826,6 +826,9 @@
 
 .message-user-actions {
   margin-bottom: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
 }
 
 .message-user-image {
@@ -850,6 +853,39 @@
   font-size: 0.72rem;
   padding: 0.2rem 0.55rem;
   cursor: pointer;
+}
+
+.message-user-actions__icon-btn {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg-soft);
+  color: var(--text);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.message-user-actions__icon-btn svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.message-user-actions__icon-btn:hover:not(:disabled) {
+  border-color: rgba(201, 162, 39, 0.45);
+}
+
+.message-user-actions__icon-btn.is-success {
+  border-color: rgba(89, 188, 119, 0.55);
+  color: #59bc77;
 }
 
 .message-user-edit {
@@ -889,6 +925,7 @@
 }
 
 .message-user-actions__edit:disabled,
+.message-user-actions__icon-btn:disabled,
 .message-user-edit__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

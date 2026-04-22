@@ -1,7 +1,36 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./home.css";
 
 export function HomePage() {
+  useEffect(() => {
+    const revealEls = Array.from(document.querySelectorAll<HTMLElement>(".home-reveal"));
+    if (revealEls.length === 0) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      revealEls.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.16,
+        rootMargin: "0px 0px -8% 0px",
+      }
+    );
+
+    revealEls.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="home">
       <div className="home__bg" aria-hidden="true" />
@@ -11,10 +40,10 @@ export function HomePage() {
           GRIND
         </Link>
         <nav className="home-nav__links">
-          <a href="#about" className="home-nav__link">
+          <a href="/#about" className="home-nav__link">
             About
           </a>
-          <a href="#use" className="home-nav__link">
+          <a href="/#use" className="home-nav__link">
             How to use
           </a>
           <Link to="/chat" className="home-nav__cta home-nav__cta--ghost">
@@ -170,8 +199,15 @@ export function HomePage() {
       </main>
 
       <footer className="home-footer">
-        <span className="home-footer__brand">GRIND</span>
-        <span className="home-footer__meta">Marketing strategist for SMEs</span>
+        <div className="home-footer__left">
+          <span className="home-footer__brand">GRIND</span>
+          <span className="home-footer__meta">Marketing strategist for SMEs</span>
+        </div>
+        <nav className="home-footer__links home-footer__links--dock" aria-label="Essentials">
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/terms-and-conditions">Terms & Conditions</Link>
+          <Link to="/contact">Contact</Link>
+        </nav>
       </footer>
     </div>
   );

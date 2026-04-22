@@ -7,6 +7,7 @@ import { RegisterPage } from "./features/auth/RegisterPage";
 import { HomePage } from "./features/home/HomePage";
 import { ChatView } from "./features/chat/ChatView";
 import { OnboardingPage } from "./features/onboarding/OnboardingPage";
+import { ContactPage, PrivacyPolicyPage, TermsPage } from "./features/site/LegalAndContactPages";
 import { ThemeToggle } from "./components/ThemeToggle";
 
 export function App() {
@@ -15,6 +16,9 @@ export function App() {
       <ThemeToggle />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-and-conditions" element={<TermsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
