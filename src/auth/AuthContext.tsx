@@ -112,10 +112,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async completeGoogleCallback(accessToken: string) {
         completeGoogleLogin(accessToken);
-        const session = await refreshSession();
-        setUser(session.user);
-        setOnboardingCompleted(session.onboardingCompleted);
-        setStatus("authenticated");
+        try {
+          const session = await refreshSession();
+          setUser(session.user);
+          setOnboardingCompleted(session.onboardingCompleted);
+          setStatus("authenticated");
+          return;
+        } catch {
+          // Some deployments may not send refresh cookie on first callback round-trip.
+          const session = await fetchMe();
+          setUser(session.user);
+          setOnboardingCompleted(session.onboardingCompleted);
+          setStatus("authenticated");
+        }
       },
       markOnboardingCompleted() {
         setOnboardingCompleted(true);
