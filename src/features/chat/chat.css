@@ -1284,7 +1284,7 @@
   width: 100%;
   resize: vertical;
   min-height: 4.65rem;
-  padding: 0.95rem 2.9rem 1.95rem 1.05rem;
+  padding: 0.95rem 5.25rem 1.95rem 1.05rem;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--input-bg);
@@ -1339,6 +1339,51 @@
   padding: 0;
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.composer__voice-toggle {
+  position: absolute;
+  right: 3.1rem;
+  bottom: 0.7rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg-soft);
+  color: var(--muted);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.composer__voice-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.composer__voice-toggle:hover:not(:disabled) {
+  border-color: rgba(201, 162, 39, 0.45);
+  color: var(--text);
+}
+
+.composer__voice-toggle.is-active {
+  border-color: rgba(201, 162, 39, 0.55);
+  background: rgba(201, 162, 39, 0.16);
+  color: var(--text);
+}
+
+.composer__voice-toggle.is-listening {
+  border-color: rgba(226, 94, 94, 0.5);
+  background: rgba(226, 94, 94, 0.14);
+  color: #ff8f8f;
 }
 
 .composer__image-upload input {
@@ -1450,4 +1495,8 @@
   margin: 0;
   font-size: 0.82rem;
   color: var(--muted);
+}
+
+.composer__hint--warn {
+  color: #df6d6d;
 }

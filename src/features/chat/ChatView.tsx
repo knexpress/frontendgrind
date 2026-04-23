@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { fetchModelOptions, type ModelAlias, type ModelOption, type ResponseStyle } from "../../api/conversations";
 import { MessageList } from "./MessageList";
@@ -10,6 +10,7 @@ import "./chat.css";
 export function ChatView() {
   const auth = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { conversationId, threads, messages, status, error, send, editAndResend, retry, openConversation, createNewConversation } =
     useChatSession(auth.user!.id);
@@ -21,6 +22,7 @@ export function ChatView() {
   const [query, setQuery] = useState("");
   const [recentsQuery, setRecentsQuery] = useState("");
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
+  const [speakNextAssistantReply, setSpeakNextAssistantReply] = useState(false);
 
   const isRecentsView = location.pathname.startsWith("/chat/recents");
   const busy = status === "loading" || status === "sending";
@@ -49,6 +51,34 @@ export function ChatView() {
     if (!el) return;
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, showTyping, sessionLoading, error]);
+
+  useEffect(() => {
+    if (!speakNextAssistantReply) return;
+    if (status !== "idle") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    const text = last.content.trim();
+    if (!text) return;
+    if (!("speechSynthesis" in window)) {
+      setSpeakNextAssistantReply(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.onend = () => setSpeakNextAssistantReply(false);
+    utterance.onerror = () => setSpeakNextAssistantReply(false);
+    window.speechSynthesis.speak(utterance);
+  }, [messages, speakNextAssistantReply, status]);
+
+  useEffect(() => {
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -101,6 +131,10 @@ export function ChatView() {
         ];
 
   async function handleOpenConversation(id: string) {
+    if (isRecentsView) {
+      navigate(`/chat?c=${encodeURIComponent(id)}`);
+      return;
+    }
     await openConversation(id);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -146,7 +180,6 @@ export function ChatView() {
                 aria-label="Search chat history"
               />
             </label>
-            <div className="chat-nav__item chat-nav__item--muted">Chats</div>
             <Link
               className={`chat-nav__item chat-nav__item--link${isRecentsView ? " is-active" : ""}`}
               to="/chat/recents"
@@ -177,6 +210,9 @@ export function ChatView() {
           </div>
 
           <div className="chat-sidebar__footer">
+            <Link to="/profile" className="chat-nav__item chat-nav__item--link">
+              Profile
+            </Link>
             <Link to="/" className="chat-nav__item chat-nav__item--link">
               Back home
             </Link>
@@ -249,6 +285,7 @@ export function ChatView() {
                       selectedResponseStyle={selectedResponseStyle}
                       onChangeResponseStyle={setSelectedResponseStyle}
                       onSend={(t, model, responseStyle, imageFile) => void send(t, model, responseStyle, imageFile)}
+                      onVoiceMessageSent={() => setSpeakNextAssistantReply(true)}
                     />
                   </div>
                 </section>
@@ -288,6 +325,7 @@ export function ChatView() {
                       selectedResponseStyle={selectedResponseStyle}
                       onChangeResponseStyle={setSelectedResponseStyle}
                       onSend={(t, model, responseStyle, imageFile) => void send(t, model, responseStyle, imageFile)}
+                      onVoiceMessageSent={() => setSpeakNextAssistantReply(true)}
                     />
                   </div>
                 </>

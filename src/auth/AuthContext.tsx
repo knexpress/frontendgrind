@@ -8,6 +8,8 @@ import {
   logout,
   refreshSession,
   register,
+  updateProfile,
+  uploadProfileAvatar,
   type AuthUser,
 } from "../api/auth";
 import { apiUrl } from "../api/config";
@@ -26,6 +28,8 @@ type AuthContextValue = {
   loginWithGoogleCredential: (credential: string) => Promise<void>;
   completeGoogleCallback: (accessToken: string) => Promise<void>;
   markOnboardingCompleted: () => void;
+  updateUserProfile: (input: { fullName: string; mobileNumber?: string; dateOfBirth?: string }) => Promise<void>;
+  uploadUserAvatar: (file: File) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -115,6 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       markOnboardingCompleted() {
         setOnboardingCompleted(true);
+      },
+      async updateUserProfile(input) {
+        const next = await updateProfile(input);
+        setUser(next);
+      },
+      async uploadUserAvatar(file) {
+        const next = await uploadProfileAvatar(file);
+        setUser(next);
       },
     }),
     [onboardingCompleted, status, user]

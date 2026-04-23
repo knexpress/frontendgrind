@@ -8,6 +8,7 @@ import { HomePage } from "./features/home/HomePage";
 import { ChatView } from "./features/chat/ChatView";
 import { OnboardingPage } from "./features/onboarding/OnboardingPage";
 import { ContactPage, PrivacyPolicyPage, TermsPage } from "./features/site/LegalAndContactPages";
+import { ProfilePage } from "./features/profile/ProfilePage";
 import { ThemeToggle } from "./components/ThemeToggle";
 
 export function App() {
@@ -19,6 +20,14 @@ export function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-and-conditions" element={<TermsPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />

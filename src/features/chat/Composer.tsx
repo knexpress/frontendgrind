@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { ModelAlias, ModelOption, ResponseStyle } from "../../api/conversations";
 import { MAX_CHAT_MESSAGE_CHARS } from "./useChatSession";
 
@@ -10,6 +10,26 @@ type Props = {
   selectedResponseStyle: ResponseStyle;
   onChangeResponseStyle: (style: ResponseStyle) => void;
   onSend: (text: string, model: ModelAlias, responseStyle: ResponseStyle, imageFile?: File | null) => void;
+  onVoiceMessageSent?: () => void;
+};
+
+type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
+type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
+type BrowserSpeechRecognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+};
+
+type SpeechRecognitionCtor = new () => BrowserSpeechRecognition;
+type WindowWithSpeech = Window & {
+  SpeechRecognition?: SpeechRecognitionCtor;
+  webkitSpeechRecognition?: SpeechRecognitionCtor;
 };
 
 export function Composer({
@@ -20,10 +40,15 @@ export function Composer({
   selectedResponseStyle,
   onChangeResponseStyle,
   onSend,
+  onVoiceMessageSent,
 }: Props) {
   const [value, setValue] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
+  const [voiceListening, setVoiceListening] = useState(false);
+  const [voiceUnavailable, setVoiceUnavailable] = useState(false);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const charCount = value.length;
 
   useEffect(() => {
@@ -40,7 +65,12 @@ export function Composer({
 
   function submit() {
     if (disabled || (!value.trim() && !imageFile)) return;
+    const useVoiceForThisMessage = voiceModeEnabled;
     onSend(value, selectedModel, selectedResponseStyle, imageFile);
+    if (useVoiceForThisMessage) {
+      onVoiceMessageSent?.();
+      setVoiceModeEnabled(false);
+    }
     setValue("");
     setImageFile(null);
   }
@@ -48,6 +78,62 @@ export function Composer({
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     submit();
+  }
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  function withSpeechRecognition(): BrowserSpeechRecognition | null {
+    const win = window as WindowWithSpeech;
+    const Ctor = win.SpeechRecognition ?? win.webkitSpeechRecognition;
+    if (!Ctor) {
+      setVoiceUnavailable(true);
+      return null;
+    }
+    setVoiceUnavailable(false);
+    const recognition = new Ctor();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognitionRef.current = recognition;
+    return recognition;
+  }
+
+  function startListening() {
+    if (disabled) return;
+    const recognition = withSpeechRecognition();
+    if (!recognition) return;
+    setVoiceModeEnabled(true);
+    setVoiceListening(true);
+
+    recognition.onresult = (event) => {
+      const chunks: string[] = [];
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        if (result?.isFinal && result?.[0]?.transcript) {
+          chunks.push(result[0].transcript);
+        }
+      }
+      const combined = chunks.join(" ").trim();
+      if (!combined) return;
+      setValue((prev) => {
+        const prefix = prev.trim();
+        return prefix ? `${prefix} ${combined}` : combined;
+      });
+    };
+    recognition.onerror = () => {
+      setVoiceListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.onend = () => {
+      setVoiceListening(false);
+      recognitionRef.current = null;
+    };
+    recognition.start();
   }
 
   return (
@@ -106,6 +192,29 @@ export function Composer({
               }
             }}
           />
+          <button
+            type="button"
+            className={`composer__voice-toggle${voiceModeEnabled ? " is-active" : ""}${voiceListening ? " is-listening" : ""}`}
+            onClick={() => {
+              if (voiceListening) {
+                recognitionRef.current?.stop();
+                recognitionRef.current = null;
+                setVoiceListening(false);
+                return;
+              }
+              startListening();
+            }}
+            disabled={disabled}
+            aria-label={voiceListening ? "Stop voice input" : "Use voice input"}
+            title={voiceListening ? "Listening..." : "Voice input"}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 4a3 3 0 0 1 3 3v4a3 3 0 1 1-6 0V7a3 3 0 0 1 3-3Z" />
+              <path d="M19 10a7 7 0 0 1-14 0" />
+              <path d="M12 17v3" />
+              <path d="M9 20h6" />
+            </svg>
+          </button>
           {imagePreviewUrl ? (
             <div className="composer__image-preview">
               <img src={imagePreviewUrl} alt={imageFile?.name || "Attached image"} />
@@ -148,8 +257,14 @@ export function Composer({
         </button>
       </div>
       <p className="composer__hint">
-        Enter to send · Shift+Enter for new line · Optional image upload · {charCount}/{MAX_CHAT_MESSAGE_CHARS}
+        Enter to send · Shift+Enter for new line · Mic enables voice mode + spoken reply · Optional image upload ·{" "}
+        {charCount}/{MAX_CHAT_MESSAGE_CHARS}
       </p>
+      {voiceUnavailable ? (
+        <p className="composer__hint composer__hint--warn">
+          Voice input is not supported in this browser. Please use text input.
+        </p>
+      ) : null}
     </form>
   );
 }

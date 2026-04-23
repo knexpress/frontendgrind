@@ -6,6 +6,8 @@ export type AuthUser = {
   email: string;
   provider: "local" | "google";
   avatarUrl: string;
+  mobileNumber: string;
+  dateOfBirth: string;
 };
 
 type AuthResponse = {
@@ -76,5 +78,27 @@ export async function loginWithGoogleCredential(credential: string): Promise<Aut
 
 export function completeGoogleLogin(accessToken: string) {
   setAccessToken(accessToken);
+}
+
+export async function updateProfile(input: {
+  fullName: string;
+  mobileNumber?: string;
+  dateOfBirth?: string;
+}): Promise<AuthUser> {
+  const data = await apiJson<{ user: AuthUser }>("/auth/profile", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+  return data.user;
+}
+
+export async function uploadProfileAvatar(file: File): Promise<AuthUser> {
+  const form = new FormData();
+  form.append("avatar", file);
+  const data = await apiJson<{ user: AuthUser }>("/auth/profile/avatar", {
+    method: "POST",
+    body: form,
+  });
+  return data.user;
 }
 
