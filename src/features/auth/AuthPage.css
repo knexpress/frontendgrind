@@ -130,10 +130,17 @@
 .auth-google-gsi {
   width: 100%;
   min-height: 48px;
+  color-scheme: light;
 }
 
 .auth-google-gsi > div {
   width: 100% !important;
+}
+
+.auth-google-gsi iframe,
+.auth-google-gsi [class*="S9gUrf"],
+.auth-google-gsi [class*="m7Bb"] {
+  color-scheme: light !important;
 }
 
 .auth-submit:disabled,
