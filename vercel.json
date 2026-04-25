@@ -2,20 +2,20 @@
   "version": 2,
   "buildCommand": "npm run build",
   "builds": [
-    { "src": "dist/client/index.html", "use": "@vercel/static" },
-    { "src": "dist/client/assets/**", "use": "@vercel/static" },
+    { "src": "dist/index.html", "use": "@vercel/static" },
+    { "src": "dist/assets/**", "use": "@vercel/static" },
     {
-      "src": "dist/client/googlea4d2ec59ac174499.html",
+      "src": "dist/googlea4d2ec59ac174499.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
-    { "src": "/assets/(.*)", "dest": "/dist/client/assets/$1" },
-    { "src": "/", "dest": "/dist/client/index.html" },
+    { "src": "/assets/(.*)", "dest": "/dist/assets/$1" },
+    { "src": "/", "dest": "/dist/index.html" },
     {
       "src": "/googlea4d2ec59ac174499\\.html",
-      "dest": "/dist/client/googlea4d2ec59ac174499.html"
+      "dest": "/dist/googlea4d2ec59ac174499.html"
     },
-    { "src": "/(.*)", "dest": "/dist/client/index.html" }
+    { "src": "/(.*)", "dest": "/dist/index.html" }
   ]
 }
