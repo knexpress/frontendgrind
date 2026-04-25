@@ -1,14 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist/client" }
+  "buildCommand": "npm run build",
+  "functions": {
+    "dist/server/server.js": {
+      "runtime": "nodejs20.x"
     }
-  ],
+  },
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)", "dest": "dist/server/server.js" }
   ]
 }
