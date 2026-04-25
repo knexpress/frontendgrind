@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import path from "node:path";
 import { Readable } from "node:stream";
+import { pathToFileURL } from "node:url";
 
 function toWebRequest(req: IncomingMessage): Request {
   const protocol =
@@ -30,7 +32,8 @@ function toWebRequest(req: IncomingMessage): Request {
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  const serverModule = await import("../dist/server/server.js");
+  const serverEntryPath = path.join(process.cwd(), "dist", "server", "server.js");
+  const serverModule = await import(pathToFileURL(serverEntryPath).href);
   const serverEntry = serverModule.default as {
     fetch?: (request: Request) => Promise<Response>;
   };
