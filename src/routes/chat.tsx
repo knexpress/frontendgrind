@@ -495,7 +495,7 @@ function ChatPage() {
                 Profile
               </Link>
               <Link
-                to="/"
+                to="/home"
                 className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
               >
                 <Home className="h-4 w-4" />

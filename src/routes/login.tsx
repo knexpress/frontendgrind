@@ -52,7 +52,7 @@ function LoginPage() {
           <div className="flex items-start justify-between gap-3">
             <h1 className="text-2xl font-semibold">Welcome to GRIND</h1>
             <Link
-              to="/"
+              to="/home"
               className="inline-flex items-center gap-1 rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-accent/40 hover:text-foreground"
             >
               <Home className="h-3.5 w-3.5" />
