@@ -2,11 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build",
   "builds": [
-    {
-      "src": "api/index.ts",
-      "use": "@vercel/node",
-      "config": { "includeFiles": "dist/server/**" }
-    },
+    { "src": "dist/client/index.html", "use": "@vercel/static" },
     { "src": "dist/client/assets/**", "use": "@vercel/static" },
     {
       "src": "dist/client/googlea4d2ec59ac174499.html",
@@ -15,10 +11,11 @@
   ],
   "routes": [
     { "src": "/assets/(.*)", "dest": "/dist/client/assets/$1" },
+    { "src": "/", "dest": "/dist/client/index.html" },
     {
       "src": "/googlea4d2ec59ac174499\\.html",
       "dest": "/dist/client/googlea4d2ec59ac174499.html"
     },
-    { "src": "/(.*)", "dest": "/api/index" }
+    { "src": "/(.*)", "dest": "/dist/client/index.html" }
   ]
 }
