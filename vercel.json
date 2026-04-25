@@ -1,12 +1,13 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "functions": {
-    "dist/server/server.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
+  "builds": [{ "src": "dist/server/server.js", "use": "@vercel/node" }],
   "routes": [
-    { "src": "/(.*)", "dest": "dist/server/server.js" }
+    { "src": "/assets/(.*)", "dest": "/dist/client/assets/$1" },
+    {
+      "src": "/googlea4d2ec59ac174499\\.html",
+      "dest": "/dist/client/googlea4d2ec59ac174499.html"
+    },
+    { "src": "/(.*)", "dest": "/dist/server/server.js" }
   ]
 }
