@@ -1,27 +1,18 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "builds": [
-    {
-      "src": "api/index.ts",
-      "use": "@vercel/node",
-      "config": { "includeFiles": "dist/server/**" }
-    },
-    { "src": "dist/client/assets/**", "use": "@vercel/static" },
-    {
-      "src": "dist/client/googlea4d2ec59ac174499.html",
-      "use": "@vercel/static"
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/server/**"
     }
-  ],
-  "routes": [
-    { "src": "/assets/(.*)", "dest": "/dist/client/assets/$1" },
+  },
+  "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/googlea4d2ec59ac174499.html", "destination": "/googlea4d2ec59ac174499.html" },
     {
-      "src": "/googlea4d2ec59ac174499\\.html",
-      "dest": "/dist/client/googlea4d2ec59ac174499.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index"
+      "source": "/(.*)",
+      "destination": "/api/index.ts"
     }
   ]
 }
