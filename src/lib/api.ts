@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "./runtimeConfig";
+
 export type PublicUser = {
   id: string;
   fullName: string;
@@ -79,11 +81,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(
-    /\/$/,
-    "",
-  ) ?? "http://localhost:4000/api/v1";
+const API_BASE_URL = getApiBaseUrl();
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";

@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Home } from "lucide-react";
 import { ApiError } from "@/lib/api";
+import { getApiBaseUrl } from "@/lib/runtimeConfig";
 import { useAuth } from "@/context/AuthContext";
 import { RequireGuest } from "@/components/auth/RouteGuards";
 
@@ -16,14 +17,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const apiBaseUrl = useMemo(
-    () =>
-      ((import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(
-        /\/$/,
-        "",
-      ) ?? "http://localhost:4000/api/v1"),
-    [],
-  );
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();

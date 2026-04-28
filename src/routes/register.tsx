@@ -1,6 +1,7 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ApiError } from "@/lib/api";
+import { getApiBaseUrl } from "@/lib/runtimeConfig";
 import { useAuth } from "@/context/AuthContext";
 import { RequireGuest } from "@/components/auth/RouteGuards";
 
@@ -16,6 +17,7 @@ function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -85,6 +87,17 @@ function RegisterPage() {
               {submitting ? "Creating account..." : "Create account"}
             </button>
           </form>
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <a
+            href={`${apiBaseUrl}/auth/google`}
+            className="inline-flex w-full items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-white/[0.03]"
+          >
+            Continue with Google
+          </a>
           <p className="mt-5 text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link to="/login" className="text-primary hover:underline">
