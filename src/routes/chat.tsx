@@ -8,6 +8,7 @@ import {
   Mic,
   PenLine,
   RotateCcw,
+  Settings,
   User,
 } from "lucide-react";
 import { RequireOnboardingComplete } from "@/components/auth/RouteGuards";
@@ -500,6 +501,13 @@ function ChatPage() {
               >
                 <Home className="h-4 w-4" />
                 Home
+              </Link>
+              <Link
+                to="/settings"
+                className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
               </Link>
               <button
                 className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
