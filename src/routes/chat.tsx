@@ -243,7 +243,8 @@ function ChatPage() {
     }
     return cleaned
       .replace(/\(\s*Source:[^)]+\)/gi, "")
-      .replace(/\s{2,}/g, " ")
+      // Keep line breaks so long replies can stay organized in the UI.
+      .replace(/[^\S\r\n]{2,}/g, " ")
       .replace(/\s+,/g, ",")
       .replace(/,\s*,/g, ", ")
       .replace(/[,\s]+$/g, "")
@@ -268,6 +269,15 @@ function ChatPage() {
             convRes.items[0].id,
           );
           setActiveConversation(full);
+        } else {
+          const created = await chatApi.createConversation(accessToken);
+          const firstConversation = await chatApi.getConversation(
+            accessToken,
+            created.id,
+          );
+          const refreshedList = await chatApi.listConversations(accessToken);
+          setConversations(refreshedList.items);
+          setActiveConversation(firstConversation);
         }
       } catch (e) {
         setError(e instanceof ApiError ? e.message : "Unable to load chat.");
