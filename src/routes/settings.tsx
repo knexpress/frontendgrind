@@ -72,13 +72,13 @@ function SettingsPage() {
               <h1 className="text-2xl font-semibold">Builder profile</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 Personalize your builder profile to connect with users of your
-                GPTs. These settings apply to publicly shared GPTs.
+                GRIND. These settings apply to publicly shared GRIND.
               </p>
             </header>
 
             <div className="my-5 rounded-2xl border border-border bg-card/60 p-4">
               <p className="text-sm">
-                Complete verification to publish GPTs to everyone. Verify your
+                Complete verification to publish GRIND to everyone. Verify your
                 identity by adding billing details or verifying ownership of a
                 public domain name.
               </p>
