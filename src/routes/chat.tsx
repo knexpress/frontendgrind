@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   ApiError,
   chatApi,
+  profileApi,
   type Conversation,
   type ConversationListItem,
   type ModelOption,
@@ -115,6 +116,9 @@ function ChatPage() {
   const [expandedAssistantMessages, setExpandedAssistantMessages] = useState<
     Record<string, boolean>
   >({});
+  const [preferredReplyLength, setPreferredReplyLength] = useState<"short" | "full">(
+    "short",
+  );
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const imagePreviewUrl = useMemo(
     () => (image ? URL.createObjectURL(image) : null),
@@ -255,13 +259,15 @@ function ChatPage() {
     const loadInitial = async () => {
       if (!accessToken) return;
       try {
-        const [modelRes, convRes] = await Promise.all([
+        const [modelRes, convRes, preferenceRes] = await Promise.all([
           chatApi.getModels(accessToken),
           chatApi.listConversations(accessToken),
+          profileApi.getPreferences(accessToken),
         ]);
         setModels(modelRes.items);
         setSelectedModel(modelRes.items[0]?.alias ?? "");
         setConversations(convRes.items);
+        setPreferredReplyLength(preferenceRes.preferredReplyLength);
 
         if (convRes.items[0]) {
           const full = await chatApi.getConversation(
@@ -286,6 +292,20 @@ function ChatPage() {
 
     void loadInitial();
   }, [accessToken]);
+
+  const setAndPersistReplyLengthPreference = async (
+    nextPreference: "short" | "full",
+  ) => {
+    if (!accessToken) return;
+    setPreferredReplyLength(nextPreference);
+    try {
+      await profileApi.patchPreferences(accessToken, {
+        preferredReplyLength: nextPreference,
+      });
+    } catch {
+      // Keep UI responsive even if preference update fails.
+    }
+  };
 
   const handleCreateConversation = async () => {
     if (!accessToken || busy) return;
@@ -633,9 +653,9 @@ function ChatPage() {
                                   assistantStepProgress[messageKey] ?? 0,
                                   steps.length - 1,
                                 );
-                                const isExpanded = Boolean(
-                                  expandedAssistantMessages[messageKey],
-                                );
+                                const isExpanded =
+                                  expandedAssistantMessages[messageKey] ??
+                                  preferredReplyLength === "full";
                                 const allSources = (msg.sources ?? []).slice(0, 3);
                                 const stepSource =
                                   allSources.length > 0
@@ -711,10 +731,14 @@ function ChatPage() {
                                           className="text-[11px] text-primary underline-offset-2 hover:underline"
                                           onClick={(event) => {
                                             event.stopPropagation();
+                                            const nextExpanded = !isExpanded;
                                             setExpandedAssistantMessages((prev) => ({
                                               ...prev,
-                                              [messageKey]: !isExpanded,
+                                              [messageKey]: nextExpanded,
                                             }));
+                                            void setAndPersistReplyLengthPreference(
+                                              nextExpanded ? "full" : "short",
+                                            );
                                           }}
                                         >
                                           {isExpanded ? "Show steps" : "Show full reply"}

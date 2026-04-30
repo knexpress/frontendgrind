@@ -27,11 +27,16 @@ export type OnboardingProfile = {
   goalDeadline: string;
   monthlyBudget: string;
   marketingHistory: string;
+  preferredReplyLength: "short" | "full";
 };
 
 export type OnboardingPayload = {
   completed: boolean;
   profile: OnboardingProfile | null;
+};
+
+export type ReplyPreferencesPayload = {
+  preferredReplyLength: "short" | "full";
 };
 
 export type ModelOption = {
@@ -194,6 +199,16 @@ export const profileApi = {
   putOnboarding(accessToken: string, payload: OnboardingProfile) {
     return apiFetch<OnboardingPayload>("/profile/onboarding", {
       method: "PUT",
+      accessToken,
+      body: payload,
+    });
+  },
+  getPreferences(accessToken: string) {
+    return apiFetch<ReplyPreferencesPayload>("/profile/preferences", { accessToken });
+  },
+  patchPreferences(accessToken: string, payload: ReplyPreferencesPayload) {
+    return apiFetch<ReplyPreferencesPayload>("/profile/preferences", {
+      method: "PATCH",
       accessToken,
       body: payload,
     });

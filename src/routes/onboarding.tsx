@@ -4,7 +4,11 @@ import { RequireAuth } from "@/components/auth/RouteGuards";
 import { useAuth } from "@/context/AuthContext";
 import { ApiError, profileApi, type OnboardingProfile } from "@/lib/api";
 
-const defaultForm: OnboardingProfile = {
+type OnboardingForm = Omit<OnboardingProfile, "preferredReplyLength"> & {
+  preferredReplyLength: "" | "short" | "full";
+};
+
+const defaultForm: OnboardingForm = {
   ownerName: "",
   businessType: "",
   marketLocation: "",
@@ -15,6 +19,7 @@ const defaultForm: OnboardingProfile = {
   goalDeadline: "",
   monthlyBudget: "",
   marketingHistory: "",
+  preferredReplyLength: "",
 };
 
 export const Route = createFileRoute("/onboarding")({
@@ -88,13 +93,18 @@ const steps: StepConfig[] = [
     placeholder:
       "e.g. Instagram ads worked, influencer deals were expensive and low ROI",
   },
+  {
+    title: "How do you want GRIND replies by default?",
+    description: "Choose the reply view style you prefer in chat.",
+    field: "preferredReplyLength",
+  },
 ];
 
 function OnboardingPage() {
   const navigate = useNavigate();
   const { accessToken, onboardingCompleted, setOnboardingCompleted } =
     useAuth();
-  const [form, setForm] = useState<OnboardingProfile>(defaultForm);
+  const [form, setForm] = useState<OnboardingForm>(defaultForm);
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -117,7 +127,10 @@ function OnboardingPage() {
       try {
         const data = await profileApi.getOnboarding(accessToken);
         if (data.profile) {
-          setForm(data.profile);
+          setForm({
+            ...data.profile,
+            preferredReplyLength: data.profile.preferredReplyLength ?? "",
+          });
         }
       } catch {
         // keep empty defaults if no profile
@@ -129,13 +142,16 @@ function OnboardingPage() {
     void load();
   }, [accessToken, onboardingCompleted, navigate]);
 
-  const updateField = (key: keyof OnboardingProfile, value: string) => {
+  const updateField = (key: keyof OnboardingForm, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const canMoveNext = () => {
     if (currentStep.field === "revenueGoal") {
       return form.revenueGoal.trim().length > 0 && form.goalDeadline.trim().length > 0;
+    }
+    if (currentStep.field === "preferredReplyLength") {
+      return form.preferredReplyLength === "short" || form.preferredReplyLength === "full";
     }
     return form[currentStep.field].trim().length > 0;
   };
@@ -165,7 +181,18 @@ function OnboardingPage() {
     setError("");
     setSubmitting(true);
     try {
-      await profileApi.putOnboarding(accessToken, form);
+      if (
+        form.preferredReplyLength !== "short" &&
+        form.preferredReplyLength !== "full"
+      ) {
+        setError("Please choose your default reply style before finishing.");
+        setSubmitting(false);
+        return;
+      }
+      await profileApi.putOnboarding(accessToken, {
+        ...form,
+        preferredReplyLength: form.preferredReplyLength,
+      });
       setOnboardingCompleted(true);
       await navigate({ to: "/chat" });
     } catch (e) {
@@ -226,6 +253,37 @@ function OnboardingPage() {
                       onChange={(v) => updateField("goalDeadline", v)}
                       placeholder="e.g. within 6 months"
                     />
+                  </div>
+                ) : currentStep.field === "preferredReplyLength" ? (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => updateField("preferredReplyLength", "short")}
+                      className={`rounded-xl border px-4 py-3 text-left text-sm ${
+                        form.preferredReplyLength === "short"
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground"
+                      }`}
+                    >
+                      <p className="font-semibold text-foreground">Short replies</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Step-by-step summary view by default.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField("preferredReplyLength", "full")}
+                      className={`rounded-xl border px-4 py-3 text-left text-sm ${
+                        form.preferredReplyLength === "full"
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground"
+                      }`}
+                    >
+                      <p className="font-semibold text-foreground">Long replies</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Full assistant reply view by default.
+                      </p>
+                    </button>
                   </div>
                 ) : (
                   <Field
